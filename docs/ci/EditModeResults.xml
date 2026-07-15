@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="9" result="Passed" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.0191439">
+  <test-suite type="TestSuite" id="1000" name="Lumina Match" fullname="Lumina Match" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.019144" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1015" name="LuminaMatch.Tests.dll" fullname="/Users/marcocosta/Games/LuminaMatch/Library/ScriptAssemblies/LuminaMatch.Tests.dll" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.016026" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="93027" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1016" name="LuminaMatch" fullname="LuminaMatch" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.015868" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1017" name="Tests" fullname="LuminaMatch.Tests" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.015772" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1007" name="BoardModelTests" fullname="LuminaMatch.Tests.BoardModelTests" classname="LuminaMatch.Tests.BoardModelTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.012977" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1008" name="ApplyGravity_GemsFallDown" fullname="LuminaMatch.Tests.BoardModelTests.ApplyGravity_GemsFallDown" methodname="ApplyGravity_GemsFallDown" classname="LuminaMatch.Tests.BoardModelTests" runstate="Runnable" seed="115335860" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.005154" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1009" name="NewBoard_HasNoInitialMatches" fullname="LuminaMatch.Tests.BoardModelTests.NewBoard_HasNoInitialMatches" methodname="NewBoard_HasNoInitialMatches" classname="LuminaMatch.Tests.BoardModelTests" runstate="Runnable" seed="1439726260" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.000759" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1010" name="ResolveMatches_IncreasesScore" fullname="LuminaMatch.Tests.BoardModelTests.ResolveMatches_IncreasesScore" methodname="ResolveMatches_IncreasesScore" classname="LuminaMatch.Tests.BoardModelTests" runstate="Runnable" seed="481114962" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.002438" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1011" name="LevelCatalogTests" fullname="LuminaMatch.Tests.LevelCatalogTests" classname="LuminaMatch.Tests.LevelCatalogTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.001337" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1012" name="Get_ReturnsSixtyUniqueSeeds" fullname="LuminaMatch.Tests.LevelCatalogTests.Get_ReturnsSixtyUniqueSeeds" methodname="Get_ReturnsSixtyUniqueSeeds" classname="LuminaMatch.Tests.LevelCatalogTests" runstate="Runnable" seed="1337915384" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.001112" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1013" name="Match3SessionTests" fullname="LuminaMatch.Tests.Match3SessionTests" classname="LuminaMatch.Tests.Match3SessionTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.000392" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1014" name="Session_StartsWithConfiguredMoves" fullname="LuminaMatch.Tests.Match3SessionTests.Session_StartsWithConfiguredMoves" methodname="Session_StartsWithConfiguredMoves" classname="LuminaMatch.Tests.Match3SessionTests" runstate="Runnable" seed="129883056" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.000256" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1002" name="MatchFinderTests" fullname="LuminaMatch.Tests.MatchFinderTests" classname="LuminaMatch.Tests.MatchFinderTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.000595" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1003" name="FindMatches_HorizontalThree_Detected" fullname="LuminaMatch.Tests.MatchFinderTests.FindMatches_HorizontalThree_Detected" methodname="FindMatches_HorizontalThree_Detected" classname="LuminaMatch.Tests.MatchFinderTests" runstate="Runnable" seed="207321465" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.000192" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1005" name="FindMatches_TwoOnly_NotMatched" fullname="LuminaMatch.Tests.MatchFinderTests.FindMatches_TwoOnly_NotMatched" methodname="FindMatches_TwoOnly_NotMatched" classname="LuminaMatch.Tests.MatchFinderTests" runstate="Runnable" seed="1985695201" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.000038" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1004" name="FindMatches_VerticalThree_Detected" fullname="LuminaMatch.Tests.MatchFinderTests.FindMatches_VerticalThree_Detected" methodname="FindMatches_VerticalThree_Detected" classname="LuminaMatch.Tests.MatchFinderTests" runstate="Runnable" seed="868880694" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.000036" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1006" name="WouldCreateMatch_ValidSwap_ReturnsTrue" fullname="LuminaMatch.Tests.MatchFinderTests.WouldCreateMatch_ValidSwap_ReturnsTrue" methodname="WouldCreateMatch_ValidSwap_ReturnsTrue" classname="LuminaMatch.Tests.MatchFinderTests" runstate="Runnable" seed="965649731" result="Passed" start-time="2026-07-15 15:40:43Z" end-time="2026-07-15 15:40:43Z" duration="0.000074" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: /Users/marcocosta/Games/LuminaMatch/Builds/EditModeResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

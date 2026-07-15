@@ -1,0 +1,20 @@
+{
+    "name": "LuminaMatch.Editor",
+    "rootNamespace": "LuminaMatch.Editor",
+    "references": [
+        "LuminaMatch.Runtime",
+        "UnityEditor.TestRunner",
+        "UnityEngine.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
