@@ -3,10 +3,6 @@ using UnityEngine;
 
 namespace LuminaMatch.Editor
 {
-    /// <summary>
-    /// Batchmode entry points:
-    /// Unity -batchmode -projectPath ... -executeMethod LuminaMatch.Editor.BatchEntrypoint.SetupAndTest -quit
-    /// </summary>
     public static class BatchEntrypoint
     {
         public static void SetupAndTest()
@@ -14,7 +10,6 @@ namespace LuminaMatch.Editor
             ProjectSetup.SetupScenes();
             if (!Application.isBatchMode)
                 return;
-
             Debug.Log("[Lumina Match] SetupAndTest OK — scenes configured.");
         }
 
@@ -22,6 +17,16 @@ namespace LuminaMatch.Editor
         {
             ProjectSetup.SetupScenes();
             BuildScripts.BuildAndroidApk();
+        }
+
+        public static void BuildAndroidAab()
+        {
+            BuildScripts.BuildAndroidAab();
+        }
+
+        public static void BuildIos()
+        {
+            BuildScripts.BuildIos();
         }
 
         public static void BuildIosSimulator()

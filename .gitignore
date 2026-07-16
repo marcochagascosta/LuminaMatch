@@ -54,3 +54,7 @@ Builds/iOS/
 .utmp/
 .vscode/
 *.apk
+
+# local secrets path marker
+*.keystore
+*.jks
