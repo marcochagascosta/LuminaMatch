@@ -10,6 +10,8 @@ namespace LuminaMatch.Editor
         public static void BuildAndroidApk()
         {
             ProjectSetup.SetupScenes();
+            ConfigureAndroidForEmulators();
+
             string dir = Path.Combine(Directory.GetParent(Application.dataPath)!.FullName, "Builds", "Android");
             Directory.CreateDirectory(dir);
             string path = Path.Combine(dir, "LuminaMatch-debug.apk");
@@ -22,11 +24,48 @@ namespace LuminaMatch.Editor
                 scenes = new[] { "Assets/Scenes/Boot.unity" },
                 locationPathName = path,
                 target = BuildTarget.Android,
-                options = BuildOptions.Development
+                options = BuildOptions.Development | BuildOptions.AllowDebugging
             };
 
             var report = BuildPipeline.BuildPlayer(options);
             Debug.Log($"[Lumina Match] Android build: {report.summary.result} -> {path}");
+        }
+
+        /// <summary>
+        /// BlueStacks/emulators are unreliable with GameActivity + Vulkan.
+        /// Force classic Activity + OpenGLES3.
+        /// </summary>
+        static void ConfigureAndroidForEmulators()
+        {
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.marcosaas.luminamatch");
+            PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel24;
+            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+
+            // Prefer classic Activity over GameActivity (Unity 6 default).
+            try
+            {
+                var androidType = typeof(PlayerSettings).GetNestedType("Android");
+                var prop = androidType?.GetProperty("applicationEntry");
+                if (prop != null)
+                {
+                    var enumType = prop.PropertyType;
+                    // Activity = typically bit 1 / named "Activity"
+                    object activityValue = System.Enum.Parse(enumType, "Activity");
+                    prop.SetValue(null, activityValue);
+                    Debug.Log("[Lumina Match] Android applicationEntry -> Activity");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[Lumina Match] Could not set applicationEntry: {ex.Message}");
+            }
+
+            PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
+            PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[]
+            {
+                UnityEngine.Rendering.GraphicsDeviceType.OpenGLES3
+            });
+            Debug.Log("[Lumina Match] Android graphics API -> OpenGLES3");
         }
 
         [MenuItem("Lumina Match/Build iOS Xcode Project")]

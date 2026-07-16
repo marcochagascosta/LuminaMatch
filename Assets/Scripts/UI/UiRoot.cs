@@ -68,12 +68,15 @@ namespace LuminaMatch.UI
 
         static Font ResolveFont()
         {
-            // Built-in Arial/LegacyRuntime often null or crashy on iOS/Android players.
             Font font = null;
 #if UNITY_IOS && !UNITY_EDITOR
             font = Font.CreateDynamicFontFromOSFont(new[] { "Helvetica", "Helvetica Neue", "Arial" }, 32);
 #elif UNITY_ANDROID && !UNITY_EDITOR
-            font = Font.CreateDynamicFontFromOSFont(new[] { "Roboto", "sans-serif", "Arial" }, 32);
+            // BlueStacks / some Android images may lack Roboto under that exact name.
+            font = Font.CreateDynamicFontFromOSFont(new[]
+            {
+                "Roboto", "sans-serif", "Arial", "Droid Sans", "Noto Sans"
+            }, 32);
 #else
             font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
@@ -82,6 +85,12 @@ namespace LuminaMatch.UI
 #endif
             if (font == null)
                 font = Font.CreateDynamicFontFromOSFont("Arial", 32);
+            if (font == null)
+            {
+                // Absolute last resort: empty dynamic font still lets Text components exist.
+                font = Font.CreateDynamicFontFromOSFont(new[] { "sans-serif", "serif", "monospace" }, 24);
+            }
+            Debug.Log($"[LuminaMatch] Font resolved: {(font != null ? font.name : "NULL")}");
             return font;
         }
 
