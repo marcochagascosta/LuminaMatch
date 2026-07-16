@@ -1,42 +1,63 @@
-# Store submission — status 2026-07-16
+# Store submission — status 2026-07-16 (atualizado)
 
 ## Pronto neste Mac
 
 | Artefato | Caminho |
 |----------|---------|
-| Android AAB (release) | `Builds/Android/LuminaMatch-release.aab` e Desktop |
+| Android AAB (release) | Desktop `LuminaMatch-release.aab` (~18 MB) |
 | Android APK (debug) | Desktop `LuminaMatch-debug.apk` |
-| iOS IPA (App Store) | `Builds/Export/LuminaMatch.ipa` e Desktop |
+| iOS IPA (App Store) | Desktop `LuminaMatch.ipa` |
 | Ícone 1024 | Desktop `LuminaMatch-icon-1024.png` |
+| Screenshots marketing | Desktop `LuminaMatch-screenshots/` |
 | Privacy policy | `docs/PRIVACY_POLICY.md` |
 | Copy da loja | `docs/STORE_LISTING.md` |
 | Keystore Android | `~/.lumina-match-secrets/` (fora do git) |
 
-Bundle ID: `com.marcosaas.luminamatch`  
-Versão: `0.1.1` (build/versionCode `2`)  
-Team Apple: `6LQQD54JHB`
+- Bundle ID: `com.marcosaas.luminamatch`
+- Versão Unity/Android: `0.1.1` (versionCode `2`)
+- App Store Connect version: `1.0` (estado PREPARE_FOR_SUBMISSION)
+- Apple app id: `6791448071`
+- Team Apple: `6LQQD54JHB`
+- Privacy URL: https://raw.githubusercontent.com/marcochagascosta/LuminaMatch/main/docs/PRIVACY_POLICY.md
 
-## Google Play (próximo clique)
+## iOS — feito
 
-1. [Play Console](https://play.google.com/console) → Create app → Lumina Match
-2. Preencha Data safety (local progress only; IAP via Google)
-3. Testing → Internal testing → Create release → upload `LuminaMatch-release.aab`
-4. Cole privacy URL (raw GitHub após push) e ícone
+- [x] App criado no App Store Connect
+- [x] IPA enviada (Transporter) — build **2** VALID
+- [x] TestFlight interno — **confirmado no iPhone do Marco**
+- [x] Build anexada à versão 1.0
+- [x] Nome, subtítulo, descrição pt-BR, keywords, support URL
+- [x] Privacy Policy URL
+- [x] Copyright `2026 Marco Costa`
+- [x] Screenshots 6.7" e 6.5" (3 cada) enviados via API
 
-## App Store / TestFlight
+## iOS — falta para enviar à Review
 
-IPA já exportada. Upload automático via API key do ambiente retornou **401 NOT_AUTHORIZED** (Issuer/Key inválidos ou sem role).
+1. Classificação etária (questionário Age Rating) no ASC — API pediu campos extras; complete no browser se ainda vermelho
+2. Categoria Games → Puzzle (tente no UI se API falhar)
+3. Contact phone do App Review (formato `+55 …`)
+4. Ícone da loja se ainda não estiver no asset catalog / ASC
+5. Quando checklist verde: **Add for Review** → **Submit**
 
-Faça no Mac (1 minuto):
+Link: https://appstoreconnect.apple.com/apps/6791448071/appstore
 
-1. Abra **Transporter** ou Xcode → Organizer → distribute o archive  
-   `Builds/Archive/LuminaMatch.xcarchive`
-2. Ou Transporter → deliver `Desktop/LuminaMatch.ipa`
-3. Em [App Store Connect](https://appstoreconnect.apple.com): crie o app se ainda não existir (bundle `com.marcosaas.luminamatch`), complete listing + age rating, depois TestFlight
+## Google Play — próximo (manual no browser)
 
-Se quiser upload por CLI depois: atualize `ASC_KEY_ID` + `ASC_ISSUER_ID` com uma API Key **App Manager** válida.
+Não há service account Play neste Mac; upload é no Console.
 
-## Parar de pedir permissão no Cursor
+1. Abra [Play Console](https://play.google.com/console) (já aberto se o `open` rodou)
+2. **Create app** → nome `Lumina Match` → Free → declare políticas
+3. **Dashboard** complete os itens obrigatórios (Privacy policy URL acima)
+4. **App content** → Data safety: só progresso local / IAP via Google Play; sem coleta de PII
+5. **Testing → Internal testing → Create new release**
+6. Upload: `Desktop/LuminaMatch-release.aab` (caminho também na área de transferência)
+7. Adicione-se como tester → instale pelo link Internal
+8. Depois do OK: promover para Closed/Production
 
-Cursor Settings → **Agents** → ative **Auto-run** / modo **Yolo** (ou “Run everything without asking”) para este workspace.  
-Os prompts atuais vêm do Auto-review de segurança (keystore/API/upload), não do jogo em si.
+Package: `com.marcosaas.luminamatch`
+
+## Monetização (ainda sandbox)
+
+IAP/Ads no código são sandbox. Antes de produção real com cobrança:
+- Unity IAP + produtos reais nas lojas
+- AdMob / Unity Ads com IDs de produção
