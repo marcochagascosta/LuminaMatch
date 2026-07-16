@@ -15,15 +15,18 @@ namespace LuminaMatch.Editor
             if (!Application.isBatchMode)
                 return;
 
-            // Compile validation: if we got here, scripts compiled.
             Debug.Log("[Lumina Match] SetupAndTest OK — scenes configured.");
-            // Note: full Test Runner in batchmode uses -runTests -testPlatform EditMode
         }
 
         public static void BuildAndroid()
         {
             ProjectSetup.SetupScenes();
             BuildScripts.BuildAndroidApk();
+        }
+
+        public static void BuildIosSimulator()
+        {
+            BuildScripts.BuildIosSimulator();
         }
     }
 }

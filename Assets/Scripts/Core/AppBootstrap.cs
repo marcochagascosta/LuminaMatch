@@ -11,29 +11,45 @@ namespace LuminaMatch.Core
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void AutoBoot()
         {
-            if (FindFirstObjectByType<AppBootstrap>() != null) return;
+            try
+            {
+                if (FindFirstObjectByType<AppBootstrap>() != null) return;
 
-            var go = new GameObject("LuminaMatchApp");
-            go.AddComponent<AppBootstrap>();
+                var go = new GameObject("LuminaMatchApp");
+                go.AddComponent<AppBootstrap>();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogException(ex);
+            }
         }
 
         void Awake()
         {
-            DontDestroyOnLoad(gameObject);
-            Application.targetFrameRate = 60;
-            Screen.sleepTimeout = SleepTimeout.NeverSleep;
+            try
+            {
+                DontDestroyOnLoad(gameObject);
+                Application.targetFrameRate = 60;
+                Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
-            if (FindFirstObjectByType<MonetizationHub>() == null)
-                gameObject.AddComponent<MonetizationHub>();
+                if (FindFirstObjectByType<MonetizationHub>() == null)
+                    gameObject.AddComponent<MonetizationHub>();
 
-            if (FindFirstObjectByType<SfxPlayer>() == null)
-                gameObject.AddComponent<SfxPlayer>();
+                if (FindFirstObjectByType<SfxPlayer>() == null)
+                    gameObject.AddComponent<SfxPlayer>();
 
-            if (PlayerProgress.Instance == null)
-                _ = new PlayerProgress();
+                if (PlayerProgress.Instance == null)
+                    _ = new PlayerProgress();
 
-            if (FindFirstObjectByType<UiRoot>() == null)
-                gameObject.AddComponent<UiRoot>();
+                if (FindFirstObjectByType<UiRoot>() == null)
+                    gameObject.AddComponent<UiRoot>();
+
+                Debug.Log("[LuminaMatch] AppBootstrap Awake OK");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogException(ex);
+            }
         }
     }
 }

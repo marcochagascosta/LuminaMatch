@@ -36,26 +36,61 @@ namespace LuminaMatch.UI
 
         void Start()
         {
-            EnsureEventSystem();
-            _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (_font == null) _font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            _whiteSprite = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
+            try
+            {
+                EnsureEventSystem();
+                _font = ResolveFont();
+                _whiteSprite = CreateWhiteSprite();
 
-            var canvasGo = new GameObject("Canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            canvasGo.transform.SetParent(transform, false);
-            _canvas = canvasGo.GetComponent<Canvas>();
-            _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            var scaler = canvasGo.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1080, 1920);
-            scaler.matchWidthOrHeight = 0.5f;
+                var canvasGo = new GameObject("Canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+                canvasGo.transform.SetParent(transform, false);
+                _canvas = canvasGo.GetComponent<Canvas>();
+                _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                var scaler = canvasGo.GetComponent<CanvasScaler>();
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(1080, 1920);
+                scaler.matchWidthOrHeight = 0.5f;
 
-            var rootGo = new GameObject("Root", typeof(RectTransform));
-            rootGo.transform.SetParent(canvasGo.transform, false);
-            _root = rootGo.GetComponent<RectTransform>();
-            Stretch(_root);
+                var rootGo = new GameObject("Root", typeof(RectTransform));
+                rootGo.transform.SetParent(canvasGo.transform, false);
+                _root = rootGo.GetComponent<RectTransform>();
+                Stretch(_root);
 
-            Show(AppScreen.Home);
+                Show(AppScreen.Home);
+                Debug.Log("[LuminaMatch] UiRoot started OK");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogException(ex);
+                // Keep process alive so device logs remain readable.
+            }
+        }
+
+        static Font ResolveFont()
+        {
+            // Built-in Arial/LegacyRuntime often null or crashy on iOS/Android players.
+            Font font = null;
+#if UNITY_IOS && !UNITY_EDITOR
+            font = Font.CreateDynamicFontFromOSFont(new[] { "Helvetica", "Helvetica Neue", "Arial" }, 32);
+#elif UNITY_ANDROID && !UNITY_EDITOR
+            font = Font.CreateDynamicFontFromOSFont(new[] { "Roboto", "sans-serif", "Arial" }, 32);
+#else
+            font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            if (font == null)
+                font = Font.CreateDynamicFontFromOSFont(new[] { "Arial", "Helvetica", "sans-serif" }, 32);
+#endif
+            if (font == null)
+                font = Font.CreateDynamicFontFromOSFont("Arial", 32);
+            return font;
+        }
+
+        static Sprite CreateWhiteSprite()
+        {
+            var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            tex.SetPixels(new[] { Color.white, Color.white, Color.white, Color.white });
+            tex.Apply(false, true);
+            return Sprite.Create(tex, new Rect(0, 0, 2, 2), new Vector2(0.5f, 0.5f), 1f);
         }
 
         void Update()
@@ -162,7 +197,7 @@ namespace LuminaMatch.UI
                 int captured = level;
                 btn.onClick.AddListener(() => TryStartLevel(captured));
 
-                var label = CreateText(row.transform, unlocked ? $"Nível {level} — {LevelCatalog.Get(level).Title}" : $"Nível {level} 🔒", 28);
+                var label = CreateText(row.transform, unlocked ? $"Nível {level} — {LevelCatalog.Get(level).Title}" : $"Nível {level} [bloqueado]", 28);
                 Stretch(label.rectTransform);
                 label.alignment = TextAnchor.MiddleCenter;
             }
@@ -518,12 +553,14 @@ namespace LuminaMatch.UI
             var go = new GameObject("Text", typeof(RectTransform), typeof(Text));
             go.transform.SetParent(parent, false);
             var t = go.GetComponent<Text>();
-            t.text = content;
-            t.font = _font;
+            t.font = _font != null ? _font : ResolveFont();
+            t.supportRichText = false;
+            t.text = content ?? "";
             t.fontSize = size;
             t.color = Color.white;
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             t.verticalOverflow = VerticalWrapMode.Overflow;
+            t.raycastTarget = false;
             return t;
         }
 
@@ -538,7 +575,9 @@ namespace LuminaMatch.UI
         static void EnsureEventSystem()
         {
             if (FindFirstObjectByType<EventSystem>() != null) return;
-            var es = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+            var es = new GameObject("EventSystem", typeof(EventSystem));
+            // Prefer legacy module (activeInputHandler=0). Safe on Editor + mobile.
+            es.AddComponent<StandaloneInputModule>();
             DontDestroyOnLoad(es);
         }
     }
