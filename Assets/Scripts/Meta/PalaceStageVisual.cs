@@ -1,45 +1,38 @@
+using LuminaMatch.Economy;
+using UnityEngine;
+
 namespace LuminaMatch.Meta
 {
-    /// <summary>
-    /// Maps castle piece progress to Meshy palace keyframes (0–4) and resource paths.
-    /// </summary>
     public static class PalaceStageVisual
     {
-        public const int KeyframeCount = 5;
-
-        static readonly string[] StageLabels =
+        /// <summary>Maps 0..20 pieces to 0..2 keyframe art.</summary>
+        public static int KeyframeIndex(int piecesUnlocked)
         {
-            "Ruínas",
-            "Portão de Cristal",
-            "Torres",
-            "Cúpula",
-            "Coroa do Palácio"
-        };
-
-        /// <summary>Maps pieces 0–20 to keyframe index 0–4.</summary>
-        public static int StageIndexFromPieces(int pieces)
-        {
-            pieces = System.Math.Clamp(pieces, 0, CastleProgress.TotalPieces);
-            if (pieces >= CastleProgress.TotalPieces)
-                return KeyframeCount - 1;
-            return pieces / (CastleProgress.TotalPieces / (KeyframeCount - 1));
+            int p = Mathf.Clamp(piecesUnlocked, 0, CastleProgress.TotalPieces);
+            if (p <= 0) return 0;
+            if (p < 10) return 1;
+            return 2;
         }
 
-        public static string StageLabel(int stageIndex)
+        public static string ResourcesPath(int piecesUnlocked)
+            => $"Art/Palace/palace_stage_{KeyframeIndex(piecesUnlocked)}";
+
+        public static Sprite LoadSprite(int piecesUnlocked)
         {
-            if (stageIndex < 0 || stageIndex >= StageLabels.Length)
-                return $"Estágio {stageIndex}";
-            return StageLabels[stageIndex];
+            var tex = Resources.Load<Texture2D>(ResourcesPath(piecesUnlocked));
+            if (tex == null) return null;
+            return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
         }
 
-        public static string StageLabelFromPieces(int pieces)
-            => StageLabel(StageIndexFromPieces(pieces));
-
-        /// <summary>Resources path pattern without extension, e.g. Art/Palace/stage_2.</summary>
-        public static string ResourcePath(int stageIndex)
-            => $"Art/Palace/stage_{stageIndex}";
-
-        public static string ResourcePathFromPieces(int pieces)
-            => ResourcePath(StageIndexFromPieces(pieces));
+        public static string StageCaption(PlayerProgress progress)
+        {
+            int pieces = CastleProgress.UnlockedPieces(progress);
+            return KeyframeIndex(pieces) switch
+            {
+                0 => "Ruínas do Palácio de Luz",
+                1 => "O palácio desperta",
+                _ => "Palácio resplandecente"
+            };
+        }
     }
 }

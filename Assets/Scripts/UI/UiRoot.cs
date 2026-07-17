@@ -133,25 +133,46 @@ namespace LuminaMatch.UI
         {
             var p = PlayerProgress.Instance;
             AddBackground(new Color(0.08f, 0.07f, 0.16f));
-            AddLabel("LUMINA MATCH", 64, new Vector2(0, 700), new Color(1f, 0.9f, 0.55f));
-            AddLabel("Restaure o Palácio de Luz", 32, new Vector2(0, 600), Color.white);
-            AddLabel(CastleProgress.StatusText(p), 28, new Vector2(0, 500), new Color(0.7f, 0.85f, 1f));
-            AddLabel($"Moedas: {p.Data.Coins}   Vidas: {p.Data.Lives}/{p.Data.MaxLives}", 26, new Vector2(0, 400), Color.white);
+
+            var palaceGo = new GameObject("Palace", typeof(RectTransform), typeof(Image));
+            palaceGo.transform.SetParent(_root, false);
+            var palaceRt = palaceGo.GetComponent<RectTransform>();
+            palaceRt.sizeDelta = new Vector2(720, 420);
+            palaceRt.anchoredPosition = new Vector2(0, 520);
+            var palaceImg = palaceGo.GetComponent<Image>();
+            palaceImg.sprite = PalaceStageVisual.LoadSprite(CastleProgress.UnlockedPieces(p)) ?? ArtCatalog.Background;
+            palaceImg.color = Color.white;
+            palaceImg.preserveAspect = true;
+
+            AddLabel("LUMINA MATCH", 64, new Vector2(0, 280), new Color(1f, 0.9f, 0.55f));
+            AddLabel("Restaure o Palácio de Luz", 32, new Vector2(0, 200), Color.white);
+            AddLabel(CastleProgress.StatusText(p), 28, new Vector2(0, 130), new Color(0.7f, 0.85f, 1f));
+            int pieces = CastleProgress.UnlockedPieces(p);
+            if (pieces > 0)
+                AddLabel(CastleProgress.PieceName(pieces - 1), 22, new Vector2(0, 80), new Color(0.85f, 0.8f, 1f));
+            AddLabel($"Moedas: {p.Data.Coins}   Vidas: {p.Data.Lives}/{p.Data.MaxLives}", 26, new Vector2(0, 20), Color.white);
 
             float regen = p.SecondsToNextLife();
             if (regen > 0)
-                AddLabel($"Próxima vida em {regen / 60:00}:{regen % 60:00}", 22, new Vector2(0, 340), new Color(0.8f, 0.8f, 0.8f));
+                AddLabel($"Próxima vida em {regen / 60:00}:{regen % 60:00}", 22, new Vector2(0, -40), new Color(0.8f, 0.8f, 0.8f));
+
+            string hint = TutorialDirector.HomeHint(p);
+            if (!string.IsNullOrEmpty(hint))
+                AddLabel(hint, 22, new Vector2(0, -100), new Color(1f, 0.9f, 0.6f));
 
             if (!string.IsNullOrEmpty(_statusMessage))
-                AddLabel(_statusMessage, 24, new Vector2(0, 260), new Color(1f, 0.75f, 0.4f));
+                AddLabel(_statusMessage, 24, new Vector2(0, -160), new Color(1f, 0.75f, 0.4f));
 
-            AddButton("Jogar", new Vector2(0, 80), () =>
+            AddButton("Jogar", new Vector2(0, -280), () =>
             {
                 _statusMessage = "";
-                Show(AppScreen.LevelSelect);
+                if (p.Data.TutorialStep < 3)
+                    TryStartLevel(System.Math.Max(1, p.Data.HighestUnlockedLevel));
+                else
+                    Show(AppScreen.LevelSelect);
             });
-            AddButton("Loja", new Vector2(0, -60), () => Show(AppScreen.Shop));
-            AddButton($"Continuar nível {p.Data.HighestUnlockedLevel}", new Vector2(0, -200), () => TryStartLevel(p.Data.HighestUnlockedLevel));
+            AddButton("Loja", new Vector2(0, -400), () => Show(AppScreen.Shop));
+            AddButton($"Continuar nível {p.Data.HighestUnlockedLevel}", new Vector2(0, -520), () => TryStartLevel(p.Data.HighestUnlockedLevel));
         }
 
         void BuildLevelSelect()
@@ -242,7 +263,10 @@ namespace LuminaMatch.UI
             AddLabel($"Nível {_session.Level.LevelId}", 36, new Vector2(0, 880), Color.white);
             AddLabel($"Movimentos: {_session.MovesLeft}   Score: {_session.Score}", 26, new Vector2(0, 800), Color.white);
             AddLabel(ObjectiveText(), 24, new Vector2(0, 740), new Color(0.85f, 0.9f, 1f));
-            AddLabel($"H:{p.Data.Hammers}  S:{p.Data.Swaps}  L:{p.Data.LineBlasts}", 22, new Vector2(0, 680), Color.white);
+            string tut = TutorialDirector.GameplayHint(_session.Level.LevelId, PlayerProgress.Instance.Data.TutorialStep);
+            if (!string.IsNullOrEmpty(tut))
+                AddLabel(tut, 22, new Vector2(0, 690), new Color(1f, 0.9f, 0.55f));
+            AddLabel($"H:{p.Data.Hammers}  S:{p.Data.Swaps}  L:{p.Data.LineBlasts}", 22, new Vector2(0, 640), Color.white);
 
             if (_pendingBooster.HasValue)
                 AddLabel($"Booster ativo: {_pendingBooster} — toque numa gema", 22, new Vector2(0, 630), new Color(1f, 0.85f, 0.4f));
@@ -286,6 +310,29 @@ namespace LuminaMatch.UI
             int w = _session.Board.Width;
             int h = _session.Board.Height;
             float cell = size / Mathf.Max(w, h);
+
+            // Background + frame behind the grid
+            var bg = new GameObject("BoardBg", typeof(RectTransform), typeof(Image));
+            bg.transform.SetParent(_root, false);
+            var bgRt = bg.GetComponent<RectTransform>();
+            bgRt.sizeDelta = new Vector2(size + 120, size + 120);
+            bgRt.anchoredPosition = center;
+            var bgImg = bg.GetComponent<Image>();
+            bgImg.sprite = ArtCatalog.Background;
+            bgImg.color = Color.white;
+            bgImg.preserveAspect = true;
+
+            var frame = new GameObject("BoardFrame", typeof(RectTransform), typeof(Image));
+            frame.transform.SetParent(_root, false);
+            var frameRt = frame.GetComponent<RectTransform>();
+            frameRt.sizeDelta = new Vector2(size + 40, size + 40);
+            frameRt.anchoredPosition = center;
+            var frameImg = frame.GetComponent<Image>();
+            frameImg.sprite = ArtCatalog.Frame;
+            frameImg.color = Color.white;
+            frameImg.preserveAspect = true;
+            frameImg.raycastTarget = false;
+
             var boardGo = new GameObject("Board", typeof(RectTransform));
             boardGo.transform.SetParent(_root, false);
             var boardRt = boardGo.GetComponent<RectTransform>();
@@ -301,17 +348,64 @@ namespace LuminaMatch.UI
                 var cellGo = new GameObject($"C{x}_{y}", typeof(RectTransform), typeof(Image), typeof(Button));
                 cellGo.transform.SetParent(boardGo.transform, false);
                 var rt = cellGo.GetComponent<RectTransform>();
-                rt.sizeDelta = new Vector2(cell - 6, cell - 6);
+                rt.sizeDelta = new Vector2(cell - 4, cell - 4);
                 rt.anchoredPosition = new Vector2((x - (w - 1) * 0.5f) * cell, (y - (h - 1) * 0.5f) * cell);
 
                 var img = cellGo.GetComponent<Image>();
-                img.sprite = _whiteSprite;
-                img.color = GemColorToUi(cellData);
+                img.preserveAspect = true;
+                ApplyCellVisual(img, cellData, cellGo.transform, cell);
                 if (_selectedCell.HasValue && _selectedCell.Value.x == x && _selectedCell.Value.y == y)
-                    img.color = Color.Lerp(img.color, Color.white, 0.45f);
+                    img.color = Color.Lerp(img.color, Color.white, 0.35f);
 
                 int bx = cx, by = cy;
                 cellGo.GetComponent<Button>().onClick.AddListener(() => OnCellClicked(bx, by));
+            }
+        }
+
+        void ApplyCellVisual(Image img, Cell cell, Transform parent, float cellSize)
+        {
+            if (cell.IsHole)
+            {
+                img.sprite = _whiteSprite;
+                img.color = new Color(0.1f, 0.1f, 0.1f, 0.25f);
+                return;
+            }
+
+            if (cell.Blocker == BlockerType.Box)
+            {
+                img.sprite = ArtCatalog.Box;
+                img.color = Color.white;
+                return;
+            }
+
+            img.sprite = ArtCatalog.Gem(cell.Color);
+            img.color = Color.white;
+
+            if (cell.Blocker == BlockerType.Ice)
+            {
+                var iceGo = new GameObject("Ice", typeof(RectTransform), typeof(Image));
+                iceGo.transform.SetParent(parent, false);
+                Stretch(iceGo.GetComponent<RectTransform>());
+                var iceImg = iceGo.GetComponent<Image>();
+                iceImg.sprite = ArtCatalog.Ice;
+                iceImg.color = new Color(1f, 1f, 1f, 0.85f);
+                iceImg.raycastTarget = false;
+                iceImg.preserveAspect = true;
+            }
+
+            if (cell.HasPower)
+            {
+                var pGo = new GameObject("Power", typeof(RectTransform), typeof(Image));
+                pGo.transform.SetParent(parent, false);
+                var prt = pGo.GetComponent<RectTransform>();
+                prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 0.5f);
+                prt.sizeDelta = new Vector2(cellSize * 0.45f, cellSize * 0.45f);
+                prt.anchoredPosition = new Vector2(cellSize * 0.22f, cellSize * 0.22f);
+                var pImg = pGo.GetComponent<Image>();
+                pImg.sprite = ArtCatalog.Power(cell.Power);
+                pImg.color = Color.white;
+                pImg.raycastTarget = false;
+                pImg.preserveAspect = true;
             }
         }
 
@@ -411,6 +505,7 @@ namespace LuminaMatch.UI
             {
                 SfxPlayer.Instance?.PlayWin();
                 PlayerProgress.Instance.OnLevelWon(_session.Level.LevelId, _session.Level.CoinReward);
+                TutorialDirector.OnLevelCompleted(PlayerProgress.Instance, _session.Level.LevelId, true);
             }
             else
             {
@@ -429,7 +524,24 @@ namespace LuminaMatch.UI
                 AddLabel("Vitória!", 56, new Vector2(0, 400), new Color(1f, 0.9f, 0.4f));
                 AddLabel($"+{_session.Level.CoinReward} moedas", 32, new Vector2(0, 280), Color.white);
                 AddLabel(CastleProgress.StatusText(PlayerProgress.Instance), 26, new Vector2(0, 180), new Color(0.7f, 0.85f, 1f));
-                AddButton("Próximo nível", new Vector2(0, 0), () => TryStartLevel(_session.Level.LevelId + 1));
+                AddLabel(PalaceStageVisual.StageCaption(PlayerProgress.Instance), 22, new Vector2(0, 120), new Color(0.9f, 0.85f, 1f));
+
+                var data = PlayerProgress.Instance.Data;
+                if (OfferService.ShouldShowStarterPack(data) && !data.StarterPackSeen)
+                {
+                    data.StarterPackSeen = true;
+                    PlayerProgress.Instance.Save();
+                    AddLabel("Oferta de estreia!", 28, new Vector2(0, 40), new Color(1f, 0.85f, 0.4f));
+                    AddButton($"Pacote estreia — {MonetizationHub.Instance.Iap.GetPriceLabel(IapProductId.StarterPack)}", new Vector2(0, -60), () =>
+                    {
+                        MonetizationHub.Instance.Iap.Purchase(IapProductId.StarterPack, _ => Show(AppScreen.Home));
+                    });
+                    AddButton("Agora não", new Vector2(0, -180), () => TryStartLevel(_session.Level.LevelId + 1));
+                }
+                else
+                {
+                    AddButton("Próximo nível", new Vector2(0, 0), () => TryStartLevel(_session.Level.LevelId + 1));
+                }
             }
             else
             {
@@ -468,14 +580,43 @@ namespace LuminaMatch.UI
         void BuildShop()
         {
             var iap = MonetizationHub.Instance.Iap;
+            var data = PlayerProgress.Instance.Data;
             AddBackground(new Color(0.09f, 0.08f, 0.14f));
-            AddLabel("Loja Lumina", 48, new Vector2(0, 820), Color.white);
-            AddLabel($"Saldo: {PlayerProgress.Instance.Data.Coins} moedas", 28, new Vector2(0, 720), Color.white);
-            AddButton("Voltar", new Vector2(-400, 820), () => Show(AppScreen.Home), new Vector2(180, 70));
+            AddLabel("Loja Lumina", 48, new Vector2(0, 860), Color.white);
+            AddLabel($"Saldo: {data.Coins} moedas", 28, new Vector2(0, 780), Color.white);
+            AddButton("Voltar", new Vector2(-400, 860), () => Show(AppScreen.Home), new Vector2(180, 70));
 
-            float y = 520;
+            float y = 640;
+            if (OfferService.ShouldShowDailyOffer(data, System.DateTime.UtcNow))
+            {
+                AddButton($"Oferta diária — {iap.GetPriceLabel(IapProductId.CoinsMedium)}", new Vector2(0, y), () =>
+                {
+                    iap.Purchase(IapProductId.CoinsMedium, ok =>
+                    {
+                        if (ok) OfferService.MarkDailyClaimed(PlayerProgress.Instance, System.DateTime.UtcNow);
+                        _statusMessage = ok ? "Oferta diária reivindicada!" : "Falha na compra";
+                        Rebuild();
+                    });
+                }, new Vector2(720, 90));
+                y -= 110;
+            }
+
+            if (OfferService.ShouldShowStarterPack(data))
+            {
+                AddButton($"Pacote estreia — {iap.GetPriceLabel(IapProductId.StarterPack)}", new Vector2(0, y), () =>
+                {
+                    iap.Purchase(IapProductId.StarterPack, ok =>
+                    {
+                        _statusMessage = ok ? "Pacote estreia OK!" : "Falha na compra";
+                        Rebuild();
+                    });
+                }, new Vector2(720, 90));
+                y -= 110;
+            }
+
             foreach (IapProductId id in System.Enum.GetValues(typeof(IapProductId)))
             {
+                if (id == IapProductId.StarterPack) continue;
                 var captured = id;
                 string label = $"{ProductLabel(id)} — {iap.GetPriceLabel(id)}";
                 AddButton(label, new Vector2(0, y), () =>
@@ -498,6 +639,7 @@ namespace LuminaMatch.UI
             IapProductId.LivesRefill => "Encher vidas",
             IapProductId.BoosterPack => "Pack boosters",
             IapProductId.RemoveAds => "Remover anúncios",
+            IapProductId.StarterPack => "Pacote estreia",
             _ => id.ToString()
         };
 
