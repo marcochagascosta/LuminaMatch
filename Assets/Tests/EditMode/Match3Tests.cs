@@ -13,6 +13,70 @@ namespace LuminaMatch.Tests
         }
     }
 
+    public class MatchShapeAnalyzerTests
+    {
+        [Test]
+        public void Analyze_HorizontalFour_SpawnsRocket()
+        {
+            var grid = Empty(8, 8);
+            for (int x = 0; x < 4; x++) grid[x, 0].Color = GemColor.Ruby;
+            var matched = MatchFinder.FindMatches(grid);
+            var spawns = MatchShapeAnalyzer.Analyze(grid, matched);
+            Assert.AreEqual(1, spawns.Count);
+            Assert.AreEqual(BoardPowerType.Rocket, spawns[0].Type);
+        }
+
+        [Test]
+        public void Analyze_HorizontalFive_SpawnsBomb()
+        {
+            var grid = Empty(8, 8);
+            for (int x = 0; x < 5; x++) grid[x, 0].Color = GemColor.Sapphire;
+            var matched = MatchFinder.FindMatches(grid);
+            var spawns = MatchShapeAnalyzer.Analyze(grid, matched);
+            Assert.AreEqual(1, spawns.Count);
+            Assert.AreEqual(BoardPowerType.Bomb, spawns[0].Type);
+        }
+
+        [Test]
+        public void Analyze_LShape_SpawnsColorDisk()
+        {
+            var grid = Empty(8, 8);
+            grid[0, 0].Color = grid[1, 0].Color = grid[2, 0].Color = GemColor.Emerald;
+            grid[0, 1].Color = grid[0, 2].Color = GemColor.Emerald;
+            var matched = MatchFinder.FindMatches(grid);
+            var spawns = MatchShapeAnalyzer.Analyze(grid, matched);
+            Assert.IsTrue(spawns.Exists(s => s.Type == BoardPowerType.ColorDisk));
+        }
+
+        [Test]
+        public void PowerUpResolver_Rocket_ClearsRowOrColumn()
+        {
+            var grid = Empty(5, 5);
+            for (int x = 0; x < 5; x++) grid[x, 2].Color = GemColor.Ruby;
+            grid[2, 2].Power = BoardPowerType.Rocket;
+            var cleared = PowerUpResolver.ExpandActivation(grid, 2, 2);
+            Assert.GreaterOrEqual(cleared.Count, 5);
+        }
+
+        [Test]
+        public void Level1_Override_IsEasy()
+        {
+            var level = LevelCatalog.Get(1);
+            Assert.AreEqual(35, level.Moves);
+            Assert.AreEqual(4, level.ColorCount);
+            Assert.AreEqual(0, level.IceChance);
+        }
+
+        static Cell[,] Empty(int w, int h)
+        {
+            var g = new Cell[w, h];
+            for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+                g[x, y] = new Cell { Color = GemColor.None };
+            return g;
+        }
+    }
+
     public class MatchFinderTests
     {
         [Test]

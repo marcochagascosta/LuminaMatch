@@ -94,11 +94,30 @@ namespace LuminaMatch.Match3
             if (matches == null || matches.Count == 0)
                 return result;
 
+            var originalMatches = new HashSet<(int x, int y)>(matches);
             var toClear = new HashSet<(int x, int y)>(matches);
-            foreach (var (x, y) in matches)
+
+            // Expand any board powers included in the clear set (chain reactions).
+            bool expanded;
+            do
             {
+                expanded = false;
+                foreach (var (px, py) in new List<(int x, int y)>(toClear))
+                {
+                    if (!InBounds(px, py)) continue;
+                    if (Grid[px, py].Power == BoardPowerType.None) continue;
+                    foreach (var extra in PowerUpResolver.ExpandActivation(Grid, px, py))
+                    {
+                        if (toClear.Add(extra))
+                            expanded = true;
+                    }
+                }
+            } while (expanded);
+
+            foreach (var (x, y) in originalMatches)
                 DamageNeighbors(x, y, toClear, result);
-            }
+
+            var spawns = MatchShapeAnalyzer.Analyze(Grid, originalMatches);
 
             foreach (var (x, y) in toClear)
             {
@@ -118,11 +137,66 @@ namespace LuminaMatch.Match3
                     result.Score += 10;
                 }
                 Grid[x, y].Color = GemColor.None;
+                Grid[x, y].Power = BoardPowerType.None;
+            }
+
+            foreach (var spawn in spawns)
+            {
+                if (!InBounds(spawn.X, spawn.Y) || Grid[spawn.X, spawn.Y].IsHole)
+                    continue;
+                Grid[spawn.X, spawn.Y].Color = spawn.Color;
+                Grid[spawn.X, spawn.Y].Power = spawn.Type;
+                Grid[spawn.X, spawn.Y].Blocker = BlockerType.None;
             }
 
             ApplyGravity();
             Refill();
             return result;
+        }
+
+        /// <summary>
+        /// Swap that also activates if either cell holds a board power.
+        /// </summary>
+        public bool TrySwapOrActivatePower(int x1, int y1, int x2, int y2, out ResolveResult result)
+        {
+            result = new ResolveResult();
+            if (!InBounds(x1, y1) || !InBounds(x2, y2)) return false;
+            if (!AreAdjacent(x1, y1, x2, y2)) return false;
+            if (Grid[x1, y1].IsHole || Grid[x2, y2].IsHole) return false;
+            if (Grid[x1, y1].Blocker != BlockerType.None || Grid[x2, y2].Blocker != BlockerType.None)
+                return false;
+
+            bool powerPlay = Grid[x1, y1].HasPower || Grid[x2, y2].HasPower;
+            if (!powerPlay)
+            {
+                if (!TrySwap(x1, y1, x2, y2))
+                    return false;
+                result = ResolveMatches(FindMatches());
+                // cascade
+                var more = FindMatches();
+                int guard = 0;
+                while (more.Count > 0 && guard++ < 20)
+                {
+                    var r = ResolveMatches(more);
+                    result.Score += r.Score;
+                    result.BlockersCleared += r.BlockersCleared;
+                    foreach (var kv in r.Collected)
+                        for (int i = 0; i < kv.Value; i++)
+                            result.AddCollected(kv.Key);
+                    more = FindMatches();
+                }
+                return true;
+            }
+
+            MatchFinder.Swap(Grid, x1, y1, x2, y2);
+            var clear = new HashSet<(int x, int y)>();
+            if (Grid[x1, y1].HasPower)
+                foreach (var c in PowerUpResolver.ExpandActivation(Grid, x1, y1)) clear.Add(c);
+            if (Grid[x2, y2].HasPower)
+                foreach (var c in PowerUpResolver.ExpandActivation(Grid, x2, y2)) clear.Add(c);
+            foreach (var m in FindMatches()) clear.Add(m);
+            result = ResolveMatches(clear);
+            return true;
         }
 
         void DamageNeighbors(int x, int y, HashSet<(int x, int y)> toClear, ResolveResult result)

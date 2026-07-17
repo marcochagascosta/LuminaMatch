@@ -34,6 +34,32 @@ namespace LuminaMatch.Match3
         public bool TrySwap(int x1, int y1, int x2, int y2)
         {
             if (IsWon || MovesLeft <= 0) return false;
+
+            bool powerPlay = Board.Grid[x1, y1].HasPower || Board.Grid[x2, y2].HasPower;
+            if (powerPlay)
+            {
+                if (System.Math.Abs(x1 - x2) + System.Math.Abs(y1 - y2) != 1) return false;
+                if (Board.Grid[x1, y1].IsHole || Board.Grid[x2, y2].IsHole) return false;
+                if (Board.Grid[x1, y1].Blocker != BlockerType.None || Board.Grid[x2, y2].Blocker != BlockerType.None)
+                    return false;
+
+                MatchFinder.Swap(Board.Grid, x1, y1, x2, y2);
+                MovesLeft--;
+                var clear = new HashSet<(int x, int y)>();
+                if (Board.Grid[x1, y1].HasPower)
+                    foreach (var c in PowerUpResolver.ExpandActivation(Board.Grid, x1, y1))
+                        clear.Add(c);
+                if (Board.Grid[x2, y2].HasPower)
+                    foreach (var c in PowerUpResolver.ExpandActivation(Board.Grid, x2, y2))
+                        clear.Add(c);
+                foreach (var m in Board.FindMatches())
+                    clear.Add(m);
+                ApplyResolve(Board.ResolveMatches(clear));
+                Cascade();
+                CheckWin();
+                return true;
+            }
+
             if (!Board.TrySwap(x1, y1, x2, y2)) return false;
 
             MovesLeft--;
