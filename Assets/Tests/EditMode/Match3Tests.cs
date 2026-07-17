@@ -3,6 +3,16 @@ using NUnit.Framework;
 
 namespace LuminaMatch.Tests
 {
+    public class CellPowerTests
+    {
+        [Test]
+        public void Cell_DefaultPower_IsNone()
+        {
+            var c = new Cell { Color = GemColor.Ruby };
+            Assert.AreEqual(BoardPowerType.None, c.Power);
+        }
+    }
+
     public class MatchFinderTests
     {
         [Test]

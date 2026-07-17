@@ -18,14 +18,24 @@ namespace LuminaMatch.Match3
         Box = 2
     }
 
+    public enum BoardPowerType
+    {
+        None = 0,
+        Rocket = 1,
+        Bomb = 2,
+        ColorDisk = 3
+    }
+
     public struct Cell
     {
         public GemColor Color;
         public BlockerType Blocker;
         public bool IsHole;
+        public BoardPowerType Power;
 
         public bool HasGem => !IsHole && Color != GemColor.None && Blocker != BlockerType.Box;
         public bool CanSwap => !IsHole && Blocker == BlockerType.None && Color != GemColor.None;
+        public bool HasPower => Power != BoardPowerType.None;
     }
 
     public enum ObjectiveType
