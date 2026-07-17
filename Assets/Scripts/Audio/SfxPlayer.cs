@@ -24,6 +24,8 @@ namespace LuminaMatch.Audio
         }
         public void PlayWin() => PlayTone(1046f, 0.2f, 0.3f);
         public void PlayFail() => PlayTone(220f, 0.15f, 0.3f);
+        public void PlayPower() => PlayTone(1320f, 0.1f, 0.28f);
+        public void PlayHint() => PlayTone(740f, 0.06f, 0.18f);
 
         void PlayTone(float hz, float duration, float volume)
         {

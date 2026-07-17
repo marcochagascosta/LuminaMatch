@@ -171,6 +171,7 @@ namespace LuminaMatch.UI
             palaceImg.sprite = PalaceStageVisual.LoadSprite(CastleProgress.UnlockedPieces(p)) ?? ArtCatalog.Background;
             palaceImg.color = Color.white;
             palaceImg.preserveAspect = true;
+            BoardJuice.Ensure(transform).DropIn(palaceRt, 80f, 0.28f);
 
             AddLabel("LUMINA MATCH", 64, new Vector2(0, 280), new Color(1f, 0.9f, 0.55f));
             AddLabel("Restaure o Palácio de Luz", 32, new Vector2(0, 200), Color.white);
@@ -345,6 +346,7 @@ namespace LuminaMatch.UI
                 var b = _hintB.HasValue ? _boardPresenter.CellRect(_hintB.Value.x, _hintB.Value.y) : null;
                 if (a != null) juice.Punch(a);
                 if (b != null) juice.Punch(b);
+                SfxPlayer.Instance?.PlayHint();
             }
 
             AddButton("Dica", new Vector2(-360, -780), ShowHint, new Vector2(180, 80));
@@ -482,7 +484,12 @@ namespace LuminaMatch.UI
                 _session.TrySwap(sx, sy, x, y);
 
             if (_session.Score > 0)
+            {
                 SfxPlayer.Instance?.PlayMatch();
+                // Prefer power cue when recent score jump is large (combo / board power).
+                if (_session.Score >= 120)
+                    SfxPlayer.Instance?.PlayPower();
+            }
             else
                 SfxPlayer.Instance?.PlayClick();
 
@@ -527,21 +534,33 @@ namespace LuminaMatch.UI
                 AddLabel(CastleProgress.StatusText(PlayerProgress.Instance), 26, new Vector2(0, 180), new Color(0.7f, 0.85f, 1f));
                 AddLabel(PalaceStageVisual.StageCaption(PlayerProgress.Instance), 22, new Vector2(0, 120), new Color(0.9f, 0.85f, 1f));
 
+                var revealGo = new GameObject("PalaceReveal", typeof(RectTransform), typeof(Image));
+                revealGo.transform.SetParent(_root, false);
+                var revealRt = revealGo.GetComponent<RectTransform>();
+                revealRt.sizeDelta = new Vector2(380, 220);
+                revealRt.anchoredPosition = new Vector2(0, -20);
+                var revealImg = revealGo.GetComponent<Image>();
+                revealImg.sprite = PalaceStageVisual.LoadSprite(CastleProgress.UnlockedPieces(PlayerProgress.Instance))
+                    ?? ArtCatalog.Background;
+                revealImg.preserveAspect = true;
+                revealImg.color = Color.white;
+                BoardJuice.Ensure(transform).FlashScore(revealRt);
+
                 var data = PlayerProgress.Instance.Data;
                 if (OfferService.ShouldShowStarterPack(data) && !data.StarterPackSeen)
                 {
                     data.StarterPackSeen = true;
                     PlayerProgress.Instance.Save();
-                    AddLabel("Oferta de estreia!", 28, new Vector2(0, 40), new Color(1f, 0.85f, 0.4f));
-                    AddButton($"Pacote estreia — {MonetizationHub.Instance.Iap.GetPriceLabel(IapProductId.StarterPack)}", new Vector2(0, -60), () =>
+                    AddLabel("Oferta de estreia!", 28, new Vector2(0, -180), new Color(1f, 0.85f, 0.4f));
+                    AddButton($"Pacote estreia — {MonetizationHub.Instance.Iap.GetPriceLabel(IapProductId.StarterPack)}", new Vector2(0, -280), () =>
                     {
                         MonetizationHub.Instance.Iap.Purchase(IapProductId.StarterPack, _ => Show(AppScreen.Home));
                     });
-                    AddButton("Agora não", new Vector2(0, -180), () => TryStartLevel(_session.Level.LevelId + 1));
+                    AddButton("Agora não", new Vector2(0, -400), () => TryStartLevel(_session.Level.LevelId + 1));
                 }
                 else
                 {
-                    AddButton("Próximo nível", new Vector2(0, 0), () => TryStartLevel(_session.Level.LevelId + 1));
+                    AddButton("Próximo nível", new Vector2(0, -280), () => TryStartLevel(_session.Level.LevelId + 1));
                 }
             }
             else
