@@ -67,6 +67,19 @@ namespace LuminaMatch.Tests
             Assert.AreEqual(0, level.IceChance);
         }
 
+        [Test]
+        public void HintFinder_FindsValidSwap()
+        {
+            var grid = Empty(5, 5);
+            // Two rubies and third that becomes match after swap
+            grid[0, 0].Color = GemColor.Ruby;
+            grid[1, 0].Color = GemColor.Ruby;
+            grid[2, 1].Color = GemColor.Ruby;
+            grid[2, 0].Color = GemColor.Emerald;
+            Assert.IsTrue(HintFinder.TryFindHint(grid, out int x1, out int y1, out int x2, out int y2));
+            Assert.IsTrue(MatchFinder.WouldCreateMatch(grid, x1, y1, x2, y2));
+        }
+
         static Cell[,] Empty(int w, int h)
         {
             var g = new Cell[w, h];

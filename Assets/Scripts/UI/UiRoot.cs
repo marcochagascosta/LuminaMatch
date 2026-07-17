@@ -32,6 +32,9 @@ namespace LuminaMatch.UI
         string _statusMessage = "";
         BoosterType? _pendingBooster;
         (int x, int y)? _selectedCell;
+        (int x, int y)? _hintA;
+        (int x, int y)? _hintB;
+        BoardPresenter _boardPresenter;
 
         Font _font;
         Sprite _whiteSprite;
@@ -57,6 +60,12 @@ namespace LuminaMatch.UI
                 rootGo.transform.SetParent(canvasGo.transform, false);
                 _root = rootGo.GetComponent<RectTransform>();
                 Stretch(_root);
+
+                _boardPresenter = gameObject.GetComponent<BoardPresenter>();
+                if (_boardPresenter == null)
+                    _boardPresenter = gameObject.AddComponent<BoardPresenter>();
+                _boardPresenter.CellClicked -= OnCellClicked;
+                _boardPresenter.CellClicked += OnCellClicked;
 
                 Show(AppScreen.Home);
                 Debug.Log("[LuminaMatch] UiRoot started OK");
@@ -269,6 +278,7 @@ namespace LuminaMatch.UI
             _session = new Match3Session(LevelCatalog.Get(_selectedLevel));
             _pendingBooster = null;
             _selectedCell = null;
+            _hintA = _hintB = null;
             Show(AppScreen.Gameplay);
         }
 
@@ -292,23 +302,72 @@ namespace LuminaMatch.UI
             AddLabel($"Nível {_session.Level.LevelId}", 36, new Vector2(0, 880), Color.white);
             AddLabel($"Movimentos: {_session.MovesLeft}   Score: {_session.Score}", 26, new Vector2(0, 800), Color.white);
             AddLabel(ObjectiveText(), 24, new Vector2(0, 740), new Color(0.85f, 0.9f, 1f));
+            BuildObjectiveIcons(new Vector2(0, 700));
             string tut = TutorialDirector.GameplayHint(_session.Level.LevelId, PlayerProgress.Instance.Data.TutorialStep);
             if (!string.IsNullOrEmpty(tut))
-                AddLabel(tut, 22, new Vector2(0, 690), new Color(1f, 0.9f, 0.55f));
-            AddLabel($"H:{p.Data.Hammers}  S:{p.Data.Swaps}  L:{p.Data.LineBlasts}", 22, new Vector2(0, 640), Color.white);
+                AddLabel(tut, 22, new Vector2(0, 660), new Color(1f, 0.9f, 0.55f));
+            AddLabel($"H:{p.Data.Hammers}  S:{p.Data.Swaps}  L:{p.Data.LineBlasts}", 22, new Vector2(0, 610), Color.white);
 
             if (_pendingBooster.HasValue)
-                AddLabel($"Booster ativo: {_pendingBooster} — toque numa gema", 22, new Vector2(0, 630), new Color(1f, 0.85f, 0.4f));
+                AddLabel($"Booster ativo: {_pendingBooster} — toque numa gema", 22, new Vector2(0, 560), new Color(1f, 0.85f, 0.4f));
 
-            BuildBoard(new Vector2(0, -40), 820);
-            AddButton("Martelo", new Vector2(-360, -780), () => ActivateBooster(BoosterType.Hammer), new Vector2(180, 80));
-            AddButton("Troca", new Vector2(-120, -780), () => ActivateBooster(BoosterType.Swap), new Vector2(180, 80));
-            AddButton("Linha", new Vector2(120, -780), () => ActivateBooster(BoosterType.LineBlast), new Vector2(180, 80));
-            AddButton("Sair", new Vector2(360, -780), () =>
+            _boardPresenter.Bind(_root, _session.Board, new Vector2(0, -40), 820, _whiteSprite);
+            _boardPresenter.Refresh(_selectedCell);
+            if (_hintA.HasValue)
+            {
+                var juice = BoardJuice.Ensure(transform);
+                var a = _boardPresenter.CellRect(_hintA.Value.x, _hintA.Value.y);
+                var b = _hintB.HasValue ? _boardPresenter.CellRect(_hintB.Value.x, _hintB.Value.y) : null;
+                if (a != null) juice.Punch(a);
+                if (b != null) juice.Punch(b);
+            }
+
+            AddButton("Dica", new Vector2(-360, -780), ShowHint, new Vector2(180, 80));
+            AddButton("Martelo", new Vector2(-120, -780), () => ActivateBooster(BoosterType.Hammer), new Vector2(180, 80));
+            AddButton("Troca", new Vector2(120, -780), () => ActivateBooster(BoosterType.Swap), new Vector2(180, 80));
+            AddButton("Linha", new Vector2(360, -780), () => ActivateBooster(BoosterType.LineBlast), new Vector2(180, 80));
+            AddButton("Sair", new Vector2(0, -880), () =>
             {
                 _lastWon = false;
                 Show(AppScreen.Result);
-            }, new Vector2(180, 80));
+            }, new Vector2(220, 70));
+        }
+
+        void BuildObjectiveIcons(Vector2 center)
+        {
+            float x = -200f;
+            foreach (var o in _session.Level.Objectives)
+            {
+                if (o.Type != ObjectiveType.CollectColor) continue;
+                var go = new GameObject("ObjGem", typeof(RectTransform), typeof(Image));
+                go.transform.SetParent(_root, false);
+                var rt = go.GetComponent<RectTransform>();
+                rt.sizeDelta = new Vector2(56, 56);
+                rt.anchoredPosition = new Vector2(x, center.y);
+                var img = go.GetComponent<Image>();
+                img.sprite = ArtCatalog.Gem(o.Color);
+                img.preserveAspect = true;
+                img.color = Color.white;
+                int left = _session.ObjectiveRemaining(o);
+                AddLabel($"×{left}", 22, new Vector2(x + 50, center.y), Color.white);
+                x += 140f;
+            }
+        }
+
+        void ShowHint()
+        {
+            if (HintFinder.TryFindHint(_session.Board.Grid, out int x1, out int y1, out int x2, out int y2))
+            {
+                _hintA = (x1, y1);
+                _hintB = (x2, y2);
+                _selectedCell = (x1, y1);
+            }
+            else
+            {
+                _statusMessage = "Sem jogadas óbvias — use um booster.";
+                _hintA = _hintB = null;
+            }
+            Rebuild();
         }
 
         string ObjectiveText()
@@ -332,129 +391,6 @@ namespace LuminaMatch.UI
         {
             _pendingBooster = _pendingBooster == type ? null : type;
             Rebuild();
-        }
-
-        void BuildBoard(Vector2 center, float size)
-        {
-            int w = _session.Board.Width;
-            int h = _session.Board.Height;
-            float cell = size / Mathf.Max(w, h);
-
-            // Background + frame behind the grid
-            var bg = new GameObject("BoardBg", typeof(RectTransform), typeof(Image));
-            bg.transform.SetParent(_root, false);
-            var bgRt = bg.GetComponent<RectTransform>();
-            bgRt.sizeDelta = new Vector2(size + 120, size + 120);
-            bgRt.anchoredPosition = center;
-            var bgImg = bg.GetComponent<Image>();
-            bgImg.sprite = ArtCatalog.Background;
-            bgImg.color = Color.white;
-            bgImg.preserveAspect = true;
-
-            var frame = new GameObject("BoardFrame", typeof(RectTransform), typeof(Image));
-            frame.transform.SetParent(_root, false);
-            var frameRt = frame.GetComponent<RectTransform>();
-            frameRt.sizeDelta = new Vector2(size + 40, size + 40);
-            frameRt.anchoredPosition = center;
-            var frameImg = frame.GetComponent<Image>();
-            frameImg.sprite = ArtCatalog.Frame;
-            frameImg.color = Color.white;
-            frameImg.preserveAspect = true;
-            frameImg.raycastTarget = false;
-
-            var boardGo = new GameObject("Board", typeof(RectTransform));
-            boardGo.transform.SetParent(_root, false);
-            var boardRt = boardGo.GetComponent<RectTransform>();
-            boardRt.sizeDelta = new Vector2(size, size);
-            boardRt.anchoredPosition = center;
-
-            for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++)
-            {
-                int cx = x;
-                int cy = y;
-                var cellData = _session.Board.Grid[x, y];
-                var cellGo = new GameObject($"C{x}_{y}", typeof(RectTransform), typeof(Image), typeof(Button));
-                cellGo.transform.SetParent(boardGo.transform, false);
-                var rt = cellGo.GetComponent<RectTransform>();
-                rt.sizeDelta = new Vector2(cell - 4, cell - 4);
-                rt.anchoredPosition = new Vector2((x - (w - 1) * 0.5f) * cell, (y - (h - 1) * 0.5f) * cell);
-
-                var img = cellGo.GetComponent<Image>();
-                img.preserveAspect = true;
-                ApplyCellVisual(img, cellData, cellGo.transform, cell);
-                if (_selectedCell.HasValue && _selectedCell.Value.x == x && _selectedCell.Value.y == y)
-                    img.color = Color.Lerp(img.color, Color.white, 0.35f);
-
-                int bx = cx, by = cy;
-                cellGo.GetComponent<Button>().onClick.AddListener(() => OnCellClicked(bx, by));
-            }
-        }
-
-        void ApplyCellVisual(Image img, Cell cell, Transform parent, float cellSize)
-        {
-            if (cell.IsHole)
-            {
-                img.sprite = _whiteSprite;
-                img.color = new Color(0.1f, 0.1f, 0.1f, 0.25f);
-                return;
-            }
-
-            if (cell.Blocker == BlockerType.Box)
-            {
-                img.sprite = ArtCatalog.Box;
-                img.color = Color.white;
-                return;
-            }
-
-            img.sprite = ArtCatalog.Gem(cell.Color);
-            img.color = Color.white;
-
-            if (cell.Blocker == BlockerType.Ice)
-            {
-                var iceGo = new GameObject("Ice", typeof(RectTransform), typeof(Image));
-                iceGo.transform.SetParent(parent, false);
-                Stretch(iceGo.GetComponent<RectTransform>());
-                var iceImg = iceGo.GetComponent<Image>();
-                iceImg.sprite = ArtCatalog.Ice;
-                iceImg.color = new Color(1f, 1f, 1f, 0.85f);
-                iceImg.raycastTarget = false;
-                iceImg.preserveAspect = true;
-            }
-
-            if (cell.HasPower)
-            {
-                var pGo = new GameObject("Power", typeof(RectTransform), typeof(Image));
-                pGo.transform.SetParent(parent, false);
-                var prt = pGo.GetComponent<RectTransform>();
-                prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 0.5f);
-                prt.sizeDelta = new Vector2(cellSize * 0.45f, cellSize * 0.45f);
-                prt.anchoredPosition = new Vector2(cellSize * 0.22f, cellSize * 0.22f);
-                var pImg = pGo.GetComponent<Image>();
-                pImg.sprite = ArtCatalog.Power(cell.Power);
-                pImg.color = Color.white;
-                pImg.raycastTarget = false;
-                pImg.preserveAspect = true;
-            }
-        }
-
-        Color GemColorToUi(Cell cell)
-        {
-            if (cell.IsHole) return new Color(0.1f, 0.1f, 0.1f, 0.3f);
-            if (cell.Blocker == BlockerType.Box) return new Color(0.45f, 0.3f, 0.15f);
-            Color baseCol = cell.Color switch
-            {
-                GemColor.Crystal => new Color(0.85f, 0.95f, 1f),
-                GemColor.Amber => new Color(1f, 0.7f, 0.2f),
-                GemColor.Sapphire => new Color(0.25f, 0.45f, 1f),
-                GemColor.Emerald => new Color(0.2f, 0.85f, 0.45f),
-                GemColor.Ruby => new Color(0.95f, 0.25f, 0.3f),
-                GemColor.Amethyst => new Color(0.7f, 0.35f, 0.95f),
-                _ => Color.gray
-            };
-            if (cell.Blocker == BlockerType.Ice)
-                baseCol = Color.Lerp(baseCol, Color.cyan, 0.45f);
-            return baseCol;
         }
 
         void OnCellClicked(int x, int y)
@@ -487,9 +423,8 @@ namespace LuminaMatch.UI
             {
                 _selectedCell = (x, y);
                 Rebuild();
-                // punch last selected visual if present
                 var juice = BoardJuice.Ensure(transform);
-                var selected = _root.Find($"Board/C{x}_{y}") as RectTransform;
+                var selected = _boardPresenter != null ? _boardPresenter.CellRect(x, y) : null;
                 if (selected != null)
                     juice.Punch(selected);
                 return;
@@ -512,6 +447,7 @@ namespace LuminaMatch.UI
             else
             {
                 _session.TrySwap(sx, sy, x, y);
+                _hintA = _hintB = null;
             }
 
             if (_session.Score > 0)
