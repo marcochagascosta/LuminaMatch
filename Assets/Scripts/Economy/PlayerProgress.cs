@@ -17,6 +17,10 @@ namespace LuminaMatch.Economy
         public int LineBlasts = 2;
         public bool RemoveAds;
         public int LevelsWon;
+        public int TutorialStep;
+        public bool StarterPackBought;
+        public string DailyOfferDayKey;
+        public bool StarterPackSeen;
     }
 
     public class PlayerProgress
