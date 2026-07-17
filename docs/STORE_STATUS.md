@@ -1,3 +1,8 @@
+## Builds
+
+- Android AAB competitive: `Builds/Android/LuminaMatch-release.aab` (also Desktop `LuminaMatch-0.1.2.aab`)
+- EditMode: 26/26 passed
+
 # Lumina Match — Store Status
 
 **Branch:** `feat/competitive-store`  
