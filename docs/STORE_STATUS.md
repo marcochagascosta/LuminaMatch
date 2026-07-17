@@ -4,33 +4,35 @@
 **Updated:** 2026-07-16  
 **Marketing version:** `0.1.2` · Android versionCode `3` · iOS build `4`
 
-## Builds
+## Builds (ready locally)
 
-- Android AAB: `Builds/Android/LuminaMatch-release.aab` (+ Desktop `LuminaMatch-0.1.2.aab`)
-- EditMode: **26/26** passed (last verified)
-- iOS Xcode project: export `Builds/iOS` for 0.1.2 / build 4 (in progress / verify Info.plist)
+| Artefato | Path | Status |
+|----------|------|--------|
+| Android AAB | `Builds/Android/LuminaMatch-release.aab` + Desktop `LuminaMatch-0.1.2.aab` | Pronto p/ Play internal |
+| iOS IPA | Desktop `LuminaMatch-build4.ipa` (0.1.2 / 4, ~96 MB, com Unity Ads pods + IAP capability) | Archive OK neste Mac |
+| EditMode | 26/26 | Verde |
 
 ## Competitive redesign — on branch
 
-- Royal Match art (gems, board, blockers, power VFX, palace stages)
-- Sprite board + pre-level objectives + FTUE + palace home
-- Board powers (rocket/bomb/color disk) + level overrides
-- Idle hint + daily offer on home
-- Starter + daily offers, `IapGrants`, Unity IAP/Ads in manifest
-- Device builds use production SDK path; Editor stays sandbox
-- Juice: concurrent punch/pop, palace drop-in, win reveal flash, SFX cues
-- Batchmode: `SuppressMdrPrompt` avoids Unity Ads MDR dialog abort
+- Royal Match art, board presenter, FTUE, powers, palace stages
+- Idle hint + daily/starter offers, Unity IAP/Ads packages
+- Juice (punch/drop/flash) + SFX cues + win palace reveal
+- Batchmode: `SuppressMdrPrompt`; CocoaPods instalado (brew) p/ UnityAds
+- ASC App ID: capability **IN_APP_PURCHASE** habilitada via API
 
-## Store IDs still placeholders
+## Não enviar iOS deste Mac
 
-Fill Unity Ads Game IDs in `UnityAdsService` / `docs/STORE_ADS_SETUP.md`.  
-Create IAP products matching `docs/STORE_IAP_SKUS.md` in ASC + Play.
+Este host é **macOS 27.0 beta** (`26A5378n`). Upload → **ITMS-90111** de novo.  
+Archive/upload App Store só em **macOS estável** (copiar projeto `Builds/iOS` ou IPA rebuild lá).
 
-## Blockers
+## Próximos passos loja
 
-- App Store **ITMS-90111**: archive on **macOS estável** (not macOS 27 beta).
-- Android: merchant account for paid IAP; upload AAB to internal when ready.
+1. Play Console: upload AAB `0.1.2` (versionCode 3) no teste interno
+2. Criar produtos IAP (`docs/STORE_IAP_SKUS.md`) em ASC + Play
+3. Preencher Unity Ads Game IDs (`UnityAdsService` / `docs/STORE_ADS_SETUP.md`)
+4. Conta merchant Google p/ IAP pagos
+5. iOS: archive em Mac estável → TestFlight
 
 ## Privacy
 
-`Assets/Plugins/iOS/PrivacyInfo.xcprivacy` present.
+`Assets/Plugins/iOS/PrivacyInfo.xcprivacy` presente (copiado p/ `Builds/iOS` no export).

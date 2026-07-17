@@ -62,9 +62,9 @@ Para o MVP atual (progresso local, sem login):
 ## 7. Teste interno (Testar e lançar → Teste interno)
 
 1. **Criar nova versão**
-2. Upload: `/Users/marcocosta/Desktop/LuminaMatch-release.aab`
-3. Nome da versão: `0.1.1 (2)`
-4. Notas: `Primeira build interna — match-3 MVP, economia e loja sandbox.`
+2. Upload: `/Users/marcocosta/Desktop/LuminaMatch-0.1.2.aab` (ou `Builds/Android/LuminaMatch-release.aab`)
+3. Nome da versão: `0.1.2 (3)`
+4. Notas: `Competitive store build — board art, tutorial, powers, offers, Unity IAP/Ads hooks.`
 5. **Revisar versão** → **Iniciar implantação para testadores internos**
 6. Aba **Testadores** → adicione seu e-mail Google
 7. Copie o link **opt-in** e instale no Android

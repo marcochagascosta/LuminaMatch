@@ -12,7 +12,7 @@
 - [ ] Fill Unity Ads Game IDs (dashboard → `UnityAdsService` / `STORE_ADS_SETUP.md`)
 - [ ] Create IAP products in ASC + Play (`STORE_IAP_SKUS.md`)
 - [ ] Archive iOS on **macOS estável** (avoid ITMS-90111)
-- [ ] Upload Android AAB versionCode **3** / version **0.1.2**
+- [ ] Upload Android AAB versionCode **3** / version **0.1.2** (arquivo local pronto)
 - [ ] Upload iOS build **4** / version **0.1.2**
 
 ## App Store Connect
