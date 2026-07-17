@@ -14,18 +14,18 @@ namespace LuminaMatch.UI
         static Sprite _rocket, _bomb, _colorDisk;
         static Sprite _fallback;
 
-        public static Sprite Cell => Ensure()._cell;
-        public static Sprite Frame => Ensure()._frame;
-        public static Sprite Background => Ensure()._bg;
-        public static Sprite Ice => Ensure()._ice;
-        public static Sprite Box => Ensure()._box;
-        public static Sprite Rocket => Ensure()._rocket;
-        public static Sprite Bomb => Ensure()._bomb;
-        public static Sprite ColorDisk => Ensure()._colorDisk;
+        public static Sprite Cell { get { LoadIfNeeded(); return _cell; } }
+        public static Sprite Frame { get { LoadIfNeeded(); return _frame; } }
+        public static Sprite Background { get { LoadIfNeeded(); return _bg; } }
+        public static Sprite Ice { get { LoadIfNeeded(); return _ice; } }
+        public static Sprite Box { get { LoadIfNeeded(); return _box; } }
+        public static Sprite Rocket { get { LoadIfNeeded(); return _rocket; } }
+        public static Sprite Bomb { get { LoadIfNeeded(); return _bomb; } }
+        public static Sprite ColorDisk { get { LoadIfNeeded(); return _colorDisk; } }
 
         public static Sprite Gem(GemColor c)
         {
-            Ensure();
+            LoadIfNeeded();
             return c switch
             {
                 GemColor.Crystal => _crystal,
@@ -38,17 +38,21 @@ namespace LuminaMatch.UI
             };
         }
 
-        public static Sprite Power(BoardPowerType p) => p switch
+        public static Sprite Power(BoardPowerType p)
         {
-            BoardPowerType.Rocket => Rocket,
-            BoardPowerType.Bomb => Bomb,
-            BoardPowerType.ColorDisk => ColorDisk,
-            _ => null
-        };
+            LoadIfNeeded();
+            return p switch
+            {
+                BoardPowerType.Rocket => _rocket,
+                BoardPowerType.Bomb => _bomb,
+                BoardPowerType.ColorDisk => _colorDisk,
+                _ => null
+            };
+        }
 
-        static ArtCatalog Ensure()
+        static void LoadIfNeeded()
         {
-            if (_loaded) return null;
+            if (_loaded) return;
             _fallback = WhiteSprite();
             _crystal = LoadSprite("Art/Gems/gem_crystal") ?? _fallback;
             _amber = LoadSprite("Art/Gems/gem_amber") ?? _fallback;
@@ -65,7 +69,6 @@ namespace LuminaMatch.UI
             _bomb = LoadSprite("Art/Vfx/bomb") ?? _fallback;
             _colorDisk = LoadSprite("Art/Vfx/color_disk") ?? _fallback;
             _loaded = true;
-            return null;
         }
 
         static Sprite LoadSprite(string resourcesPath)
