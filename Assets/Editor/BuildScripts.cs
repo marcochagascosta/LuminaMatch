@@ -58,8 +58,7 @@ namespace LuminaMatch.Editor
 
             var report = BuildPipeline.BuildPlayer(options);
             Debug.Log($"[Lumina Match] Android AAB: {report.summary.result} -> {path}");
-            if (report.summary.result != BuildResult.Succeeded)
-                EditorApplication.Exit(1);
+            EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
         }
 
         static void ConfigureAndroidCommon()
@@ -190,8 +189,7 @@ namespace LuminaMatch.Editor
             var report = BuildPipeline.BuildPlayer(options);
             Debug.Log($"[Lumina Match] iOS build ({sdk}): {report.summary.result} -> {dir}");
             PlayerSettings.iOS.sdkVersion = iOSSdkVersion.DeviceSDK;
-            if (report.summary.result != BuildResult.Succeeded)
-                EditorApplication.Exit(1);
+            EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
         }
 
         static void ForceIosSimulatorArm64()
