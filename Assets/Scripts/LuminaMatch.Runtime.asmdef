@@ -2,7 +2,10 @@
     "name": "LuminaMatch.Runtime",
     "rootNamespace": "LuminaMatch",
     "references": [
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "UnityEngine.Purchasing",
+        "UnityEngine.Purchasing.Stores",
+        "UnityEngine.Advertisements"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -11,6 +14,17 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.purchasing",
+            "expression": "4.0.0",
+            "define": "UNITY_PURCHASING"
+        },
+        {
+            "name": "com.unity.ads",
+            "expression": "4.0.0",
+            "define": "UNITY_ADS"
+        }
+    ],
     "noEngineReferences": false
 }

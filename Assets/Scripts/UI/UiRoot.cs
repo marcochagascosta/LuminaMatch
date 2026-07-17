@@ -3,6 +3,7 @@ using LuminaMatch.Economy;
 using LuminaMatch.Match3;
 using LuminaMatch.Meta;
 using LuminaMatch.Monetization;
+using LuminaMatch.UI.Screens;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -13,6 +14,7 @@ namespace LuminaMatch.UI
     {
         Home,
         LevelSelect,
+        PreLevel,
         Gameplay,
         Result,
         Shop,
@@ -122,6 +124,7 @@ namespace LuminaMatch.UI
             {
                 case AppScreen.Home: BuildHome(); break;
                 case AppScreen.LevelSelect: BuildLevelSelect(); break;
+                case AppScreen.PreLevel: BuildPreLevel(); break;
                 case AppScreen.Gameplay: BuildGameplay(); break;
                 case AppScreen.Result: BuildResult(); break;
                 case AppScreen.Shop: BuildShop(); break;
@@ -243,17 +246,43 @@ namespace LuminaMatch.UI
                 return;
             }
 
+            if (levelId > LevelCatalog.TotalLevels)
+            {
+                _statusMessage = "Você concluiu todos os níveis!";
+                Show(AppScreen.Home);
+                return;
+            }
+
+            _selectedLevel = levelId;
+            Show(AppScreen.PreLevel);
+        }
+
+        void ConfirmStartLevel()
+        {
+            var p = PlayerProgress.Instance;
             if (!p.TrySpendLife())
             {
                 Show(AppScreen.OutOfLives);
                 return;
             }
 
-            _selectedLevel = levelId;
-            _session = new Match3Session(LevelCatalog.Get(levelId));
+            _session = new Match3Session(LevelCatalog.Get(_selectedLevel));
             _pendingBooster = null;
             _selectedCell = null;
             Show(AppScreen.Gameplay);
+        }
+
+        void BuildPreLevel()
+        {
+            var p = PlayerProgress.Instance;
+            var level = LevelCatalog.Get(_selectedLevel);
+            AddBackground(new Color(0.06f, 0.07f, 0.14f));
+            AddLabel(PreLevelCopy.Title(level), 40, new Vector2(0, 520), new Color(1f, 0.92f, 0.6f));
+            AddLabel(PreLevelCopy.Objectives(level), 26, new Vector2(0, 220), Color.white);
+            AddLabel(PreLevelCopy.BoosterSummary(p), 22, new Vector2(0, -40), new Color(0.85f, 0.9f, 1f));
+            AddLabel($"Vidas: {p.Data.Lives}/{p.Data.MaxLives}", 24, new Vector2(0, -120), Color.white);
+            AddButton("Jogar (−1 vida)", new Vector2(0, -280), ConfirmStartLevel);
+            AddButton("Voltar", new Vector2(0, -400), () => Show(AppScreen.LevelSelect));
         }
 
         void BuildGameplay()
@@ -458,6 +487,11 @@ namespace LuminaMatch.UI
             {
                 _selectedCell = (x, y);
                 Rebuild();
+                // punch last selected visual if present
+                var juice = BoardJuice.Ensure(transform);
+                var selected = _root.Find($"Board/C{x}_{y}") as RectTransform;
+                if (selected != null)
+                    juice.Punch(selected);
                 return;
             }
 

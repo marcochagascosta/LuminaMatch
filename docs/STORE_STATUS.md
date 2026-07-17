@@ -1,35 +1,29 @@
 # Lumina Match — Store Status
 
 **Branch:** `feat/competitive-store`  
-**Updated:** 2026-07-16
+**Updated:** 2026-07-16  
+**Marketing version (next upload):** `0.1.2` · Android versionCode `3` · iOS build `4`
 
-## Competitive redesign (in progress → playable)
+## Competitive redesign — done on branch
 
-Delivered on branch (see plan `docs/superpowers/plans/2026-07-16-lumina-competitive-store.md`):
+- Royal Match art (gems, board, blockers, power VFX, palace stages)
+- Sprite board + pre-level objectives + FTUE + palace home
+- Board powers (rocket/bomb/color disk) + level overrides
+- Starter + daily offers, `IapGrants`, Unity IAP/Ads packages in manifest
+- Player builds use production SDK path (`UseProductionSdks`); Editor stays sandbox
+- Docs: SKUs, ads setup, GDD updated, art prompts
+- EditMode: **25/25** green (last verified)
 
-- Royal Match art: gem sprites, board frame/cells, blockers, power VFX, palace stages 0–2
-- Board UI uses sprites via `ArtCatalog` + palace keyframes on Home
-- Board powers: rocket (4), bomb (5), color disk (L/T) + resolve/activate
-- Level overrides for 1–10 / milestones; softer tutorial levels
-- FTUE hints (tutorial step on save)
-- Starter pack + daily offer rules (`OfferService`)
-- `IapGrants` + `StarterPack` SKU; Unity IAP/Ads stubs (`UseProductionSdks`)
-- Docs: `STORE_IAP_SKUS.md`, `STORE_ADS_SETUP.md`, art prompts
+## Store IDs still placeholders
 
-**Still needed for “cobrar de verdade”:**
+Fill Unity Ads Game IDs in `UnityAdsService` / `docs/STORE_ADS_SETUP.md`.  
+Create IAP products matching `docs/STORE_IAP_SKUS.md` in ASC + Play.
 
-1. Wire real Unity Purchasing + Unity Ads Game IDs (`UseProductionSdks = true`)
-2. Create store IAP products with SKUs in docs
-3. Play Mode QA on device
-4. iOS archive on **macOS estável** (not 27 beta) — ITMS-90111
-5. Optional: more Meshy 3D palace stages replacing 2D keyframes
+## Prior blockers
 
-## Prior store notes
+- App Store INVALID_BINARY **ITMS-90111**: archive on **macOS estável** (not macOS 27 beta).
+- Android: validate install when device available; merchant account for paid IAP.
 
-- Play internal test AAB was uploaded earlier (versionCode 2 / 0.1.1)
-- App Store `0.1.1` hit INVALID_BINARY (ITMS-90111 Unsupported SDK / macOS beta build machine)
-- PrivacyInfo.xcprivacy exists under `Assets/Plugins/iOS/`
+## Privacy
 
-## Marketing version
-
-Keep `0.1.1` until competitive build ships; bump iOS `CFBundleVersion` / Android versionCode on next store upload.
+`Assets/Plugins/iOS/PrivacyInfo.xcprivacy` present.

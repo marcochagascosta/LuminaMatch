@@ -1,36 +1,41 @@
 # Store submission checklist
 
-## Before upload
+## Before upload (competitive `0.1.2`)
 
 - [x] Privacy Policy URL live (GitHub raw)
-- [x] Age rating questionnaire (Apple) — preenchido via API
+- [x] Age rating / App Privacy
 - [x] Icons 1024×1024
-- [x] Screenshots iPhone 6.7" e 6.5" (marketing MVP)
-- [x] Bundle ID `com.marcosaas.luminamatch` matches consoles
-- [x] Version Android `0.1.1` / versionCode `2` · ASC version `1.0`
-- [ ] Replace sandbox IAP/Ads with production Unity IAP + AdMob (antes de cobrança real)
-- [ ] Screenshots de gameplay reais (opcional; marketing já enviado)
-- [ ] iPad screenshots (opcional se só iPhone)
+- [x] Screenshots iPhone + iPad
+- [x] Bundle ID `com.marcosaas.luminamatch`
+- [x] Competitive gameplay art + powers + FTUE + palace (branch `feat/competitive-store`)
+- [x] Unity IAP + Ads packages in project; production path on device builds
+- [ ] Fill Unity Ads Game IDs (dashboard → `UnityAdsService` / `STORE_ADS_SETUP.md`)
+- [ ] Create IAP products in ASC + Play (`STORE_IAP_SKUS.md`)
+- [ ] Archive iOS on **macOS estável** (avoid ITMS-90111)
+- [ ] Upload Android AAB versionCode **3** / version **0.1.2**
+- [ ] Upload iOS build **4** / version **0.1.2**
 
 ## App Store Connect
 
-- [x] Create app record
-- [x] Category Games / Puzzle
-- [x] Description + privacy + copyright
-- [x] Build TestFlight (build 2) — validado no iPhone
-- [x] Build anexada à versão 1.0
-- [ ] Contact phone App Review (confirme/edite no ASC)
-- [ ] Submit for review
+- [x] App record + Games/Puzzle/Casual
+- [x] Listing + privacy + copyright + free price
+- [x] TestFlight validated on device
+- [x] App Privacy published
+- [x] Contact phone App Review (`+55 37 99988-0812`)
+- [ ] New submission with competitive build 4 (macOS estável)
+- [ ] Clear prior INVALID_BINARY / attach new binary
 
 ## Google Play Console
 
-- [ ] Create app, complete Data safety form
-- [ ] Upload AAB to Internal testing (`Desktop/LuminaMatch-release.aab`)
-- [ ] Privacy policy URL
-- [ ] Promote after QA OK
+- [x] Internal testing AAB `0.1.1` / versionCode `2`
+- [x] Listing + forms + testers
+- [ ] Upload competitive AAB `0.1.2` / versionCode `3`
+- [ ] Validate install on Android device
+- [ ] Merchant account (for real IAP)
+- [ ] Closed test → Production
 
 ## Auth (do NOT paste passwords in chat)
 
-- Apple: Xcode / Transporter / App Store Connect API key no Mac
-- Google: Play Console no browser + keystore local
+- Apple: Xcode / Transporter / ASC API key
+- Google: Play Console + local keystore
 - GitHub: `gh auth login`

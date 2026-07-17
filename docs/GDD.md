@@ -1,34 +1,47 @@
-# Lumina Match — GDD (MVP)
+# Lumina Match — GDD (produto competitivo de loja)
 
-## Fantasy
+## O que é
 
-You restore the **Palácio de Luz**, a night palace whose rooms awaken as you clear gem levels.
+Match-3 free-to-play estilo **Royal Match**: combine gemas para completar objetivos de nível e **restaurar o Palácio de Luz**.
+
+## Fantasia
+
+O **Palácio de Luz** (noite, cristal, ouro) desperta peça a peça conforme você vence níveis. O match-3 é o trabalho; o palácio é a recompensa emocional.
 
 ## Core loop
 
-1. Spend 1 life → play Match-3 level
-2. Meet objectives within move limit
-3. Earn coins + progress castle pieces (1 piece / 3 wins)
-4. On fail → continue with coins, IAP, or rewarded ad
+1. Gastar 1 vida → pré-nível (objetivos) → partida
+2. Completar objetivos no limite de movimentos
+3. Vitória → moedas + progresso do mapa + peça do palácio (1 a cada 3 vitórias)
+4. Derrota → continue (moedas / rewarded / IAP)
 
 ## Board
 
-- 8×8 grid, 4–6 gem colors by difficulty
-- Ice (needs match on cell) and Box (cleared by adjacent match) blockers from mid-game
-- Boosters: Hammer (destroy one), Swap (force adjacent swap), Line blast (clear row)
+- 8×8, gemas 2D facetadas (não quadrados de cor)
+- Moldura, células, fundo noturno
+- Bloqueios: gelo e caixa
+- Power-ups no tabuleiro: match 4 = foguete, match 5 = bomba, L/T = disco de cor
+- Boosters de inventário: martelo, troca, linha
 
-## Content
+## Conteúdo
 
-- 60 procedurally seeded levels (`LevelCatalog`)
-- Linear map unlock
-- 20 castle pieces meta
+- 60 níveis (`LevelCatalog` + overrides 1–10 / marcos)
+- Tutorial guiado níveis 1–3
+- Meta: 20 peças / stages visuais do palácio
 
-## Economy
+## Economia / monetização (pressão moderada)
 
-- Max 5 lives, regen every 20 minutes
-- Soft currency: coins
-- Continue cost: 900 coins / +5 moves
+- Max 5 vidas, regen 20 min
+- Continue: 900 moedas / +5 moves
+- IAP: moedas P/M/G, vidas, boosters, remove ads, pacote estreia
+- Ads: rewarded (continue/vida); interstitial limitado (180s, sem tutorial)
+- Live ops leve: oferta diária + pacote de estreia
 
-## Out of scope (post-MVP)
+## Arte
 
-Weekly tournaments, battle pass, social, cloud save, 200+ handcrafted levels
+- 2D IA (gemas/UI/board) + stages do palácio (`Resources/Art/`)
+- Meshy opcional para 3D futuro (`docs/art/PALACE_MESHY_PROMPTS.md`)
+
+## Fora de escopo (v1)
+
+Battle pass, social, cloud save, 200+ níveis handcrafted, artista humano
