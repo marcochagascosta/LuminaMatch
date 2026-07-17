@@ -17,7 +17,11 @@ namespace LuminaMatch.Audio
         }
 
         public void PlayClick() => PlayTone(660f, 0.05f, 0.2f);
-        public void PlayMatch() => PlayTone(880f, 0.08f, 0.25f);
+        public void PlayMatch()
+        {
+            float pitch = Random.Range(0.92f, 1.08f);
+            PlayTone(880f * pitch, 0.08f, 0.25f);
+        }
         public void PlayWin() => PlayTone(1046f, 0.2f, 0.3f);
         public void PlayFail() => PlayTone(220f, 0.15f, 0.3f);
 

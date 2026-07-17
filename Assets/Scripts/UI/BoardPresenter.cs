@@ -156,7 +156,8 @@ namespace LuminaMatch.UI
             for (int i = t.childCount - 1; i >= 0; i--)
             {
                 var c = t.GetChild(i);
-                if (c.name.StartsWith("Board") || c.name == "BoardBg" || c.name == "BoardFrame")
+                var n = c.name;
+                if (n == "Board" || n == "BoardBg" || n == "BoardFrame")
                     UnityEngine.Object.Destroy(c.gameObject);
             }
         }

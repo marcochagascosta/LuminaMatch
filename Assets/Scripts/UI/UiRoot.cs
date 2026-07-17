@@ -34,7 +34,11 @@ namespace LuminaMatch.UI
         (int x, int y)? _selectedCell;
         (int x, int y)? _hintA;
         (int x, int y)? _hintB;
+        float _lastInputTime;
+        bool _autoHintAttempted;
         BoardPresenter _boardPresenter;
+
+        const float AutoHintIdleSeconds = 12f;
 
         Font _font;
         Sprite _whiteSprite;
@@ -116,6 +120,18 @@ namespace LuminaMatch.UI
         void Update()
         {
             PlayerProgress.Instance?.TickLives();
+
+            if (_screen != AppScreen.Gameplay || _session == null || _session.IsWon || _session.IsLost)
+                return;
+
+            if (_hintA.HasValue || _autoHintAttempted)
+                return;
+
+            if (Time.time - _lastInputTime >= AutoHintIdleSeconds)
+            {
+                _autoHintAttempted = true;
+                ShowHint();
+            }
         }
 
         public void Show(AppScreen screen)
@@ -183,8 +199,16 @@ namespace LuminaMatch.UI
                 else
                     Show(AppScreen.LevelSelect);
             });
-            AddButton("Loja", new Vector2(0, -400), () => Show(AppScreen.Shop));
-            AddButton($"Continuar nível {p.Data.HighestUnlockedLevel}", new Vector2(0, -520), () => TryStartLevel(p.Data.HighestUnlockedLevel));
+
+            bool showDailyOffer = OfferService.ShouldShowDailyOffer(p.Data, System.DateTime.UtcNow);
+            float shopY = showDailyOffer ? -520f : -400f;
+            float continueY = showDailyOffer ? -640f : -520f;
+
+            if (showDailyOffer)
+                AddButton("Oferta do dia", new Vector2(0, -400), () => Show(AppScreen.Shop));
+
+            AddButton("Loja", new Vector2(0, shopY), () => Show(AppScreen.Shop));
+            AddButton($"Continuar nível {p.Data.HighestUnlockedLevel}", new Vector2(0, continueY), () => TryStartLevel(p.Data.HighestUnlockedLevel));
         }
 
         void BuildLevelSelect()
@@ -279,6 +303,7 @@ namespace LuminaMatch.UI
             _pendingBooster = null;
             _selectedCell = null;
             _hintA = _hintB = null;
+            ResetIdleHintTimer();
             Show(AppScreen.Gameplay);
         }
 
@@ -354,6 +379,12 @@ namespace LuminaMatch.UI
             }
         }
 
+        void ResetIdleHintTimer()
+        {
+            _lastInputTime = Time.time;
+            _autoHintAttempted = false;
+        }
+
         void ShowHint()
         {
             if (HintFinder.TryFindHint(_session.Board.Grid, out int x1, out int y1, out int x2, out int y2))
@@ -395,6 +426,9 @@ namespace LuminaMatch.UI
 
         void OnCellClicked(int x, int y)
         {
+            ResetIdleHintTimer();
+            _hintA = _hintB = null;
+
             if (_session.IsWon || _session.IsLost)
             {
                 FinishLevel();
@@ -445,10 +479,7 @@ namespace LuminaMatch.UI
                 _pendingBooster = null;
             }
             else
-            {
                 _session.TrySwap(sx, sy, x, y);
-                _hintA = _hintB = null;
-            }
 
             if (_session.Score > 0)
                 SfxPlayer.Instance?.PlayMatch();
@@ -522,6 +553,7 @@ namespace LuminaMatch.UI
                     if (PlayerProgress.Instance.TrySpendCoins(PlayerProgress.ContinueCost))
                     {
                         _session.AddExtraMoves(5);
+                        ResetIdleHintTimer();
                         Show(AppScreen.Gameplay);
                     }
                     else
@@ -537,6 +569,7 @@ namespace LuminaMatch.UI
                         if (ok)
                         {
                             _session.AddExtraMoves(5);
+                            ResetIdleHintTimer();
                             Show(AppScreen.Gameplay);
                         }
                     });
