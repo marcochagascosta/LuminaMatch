@@ -5,31 +5,13 @@ using UnityEngine;
 
 namespace LuminaMatch.Monetization
 {
-    public enum IapProductId
-    {
-        CoinsSmall,
-        CoinsMedium,
-        CoinsLarge,
-        LivesRefill,
-        BoosterPack,
-        RemoveAds,
-        StarterPack
-    }
-
-    public interface IIapService
-    {
-        bool IsReady { get; }
-        void Purchase(IapProductId id, Action<bool> onResult);
-        string GetPriceLabel(IapProductId id);
-    }
-
     /// <summary>
-    /// Grants products locally for Editor / sandbox testing.
-    /// Wire Unity Purchasing (com.unity.purchasing) for production builds.
+    /// Production IAP stub. Wire Unity Purchasing (com.unity.purchasing) and map store IDs
+    /// from docs/STORE_IAP_SKUS.md before shipping.
     /// </summary>
-    public class SandboxIapService : IIapService
+    public class UnityIapService : IIapService
     {
-        static readonly Dictionary<IapProductId, string> Prices = new()
+        static readonly Dictionary<IapProductId, string> FallbackPrices = new()
         {
             { IapProductId.CoinsSmall, "R$ 6,90" },
             { IapProductId.CoinsMedium, "R$ 14,90" },
@@ -40,13 +22,15 @@ namespace LuminaMatch.Monetization
             { IapProductId.StarterPack, "R$ 9,90" }
         };
 
-        public bool IsReady => true;
+        public bool IsReady => false;
 
         public string GetPriceLabel(IapProductId id)
-            => Prices.TryGetValue(id, out var p) ? p : "—";
+            => FallbackPrices.TryGetValue(id, out var p) ? p : "—";
 
         public void Purchase(IapProductId id, Action<bool> onResult)
         {
+            Debug.LogWarning("[LuminaMatch] Unity IAP not configured — granting locally. Configure store IDs per docs/STORE_IAP_SKUS.md.");
+
             var progress = PlayerProgress.Instance;
             if (progress == null)
             {
@@ -55,7 +39,7 @@ namespace LuminaMatch.Monetization
             }
 
             IapGrants.Apply(id, progress);
-            Debug.Log($"[LuminaMatch] Sandbox IAP granted: {id}");
+            Debug.Log($"[LuminaMatch] Unity IAP stub granted: {id}");
             onResult?.Invoke(true);
         }
     }
