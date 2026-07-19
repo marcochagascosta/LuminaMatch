@@ -1,7 +1,7 @@
 # Lumina Match — Store Status
 
 **Branch:** `feat/competitive-store`  
-**Updated:** 2026-07-18  
+**Updated:** 2026-07-18 (sessão 2 — automação esgotada)  
 **Marketing version:** `0.1.2` · Android versionCode `3` · iOS build `4`
 
 ## Builds (ready locally)
@@ -30,20 +30,31 @@ Estado: **READY_TO_SUBMIT** (submissão à review só junto com a versão do app
 ## Play Console — Internal Testing (2026-07-18)
 
 - App ID: `4972110585725182702` · Developer: `6604076546202815303`
-- Chrome (sessão logada) estava em **Preparar versão** (`…/tracks/4701303588687654607/releases/2/prepare`) após Marco dizer **"subi"** (upload AAB).
-- **Publicação / rollout automatizado: NÃO concluído** nesta sessão.
-- Verificação UI do draft (AAB anexado + notas + Next/Review/Rollout) **não confirmada** por automação.
+- Chrome (sessão logada) em **Preparar versão** após Marco dizer **"subi"** (upload AAB).
+- **Publicação / rollout: AINDA NÃO concluído** por automação nesta sessão (nem na anterior).
+- Versão vista nas abas abertas: páginas `…/releases/2/prepare` (draft) — confirmação visual AAB 0.1.2/code 3 **não lida por JS** (Apple Events desligado).
 
-### Blockers de automação (Play)
+### Blockers de automação (Play) — reconfirmados
 
-1. **Browser MCP (cursor-ide-browser):** tabs criadas somem; `browser_navigate` falha com “No browser tab available” / “Browser view not found”.
-2. **Chrome AppleScript JS:** desativado (`Ver > Desenvolvedor > Permitir o JavaScript do Eventos da Apple`). Sem isso não dá para ler/clicar na página do Play via `osascript`.
-3. **Android Publisher API:** `gcloud` (`marko.formiga@gmail.com`) sem scope `androidpublisher` → 403 `ACCESS_TOKEN_SCOPE_INSUFFICIENT` em edits/IAP.
-4. Sandbox do agente sem acesso ao perfil/cookies do Chrome (CDP/profile copy bloqueados).
+1. **Browser MCP (cursor-ide-browser):** tabs somem entre `new` e `navigate` (“No browser tab available” / “Browser view not found”).
+2. **Chrome AppleScript JS:** runtime ainda recusa execute javascript apesar de `defaults … AppleEventsAllowJavaScriptFromAppleEvents = 1`. Menu UI-scripting não grava o ✓ (provável TCC/Acessibilidade). Clique manual no menu ainda necessário.
+3. **Android Publisher API:** `gcloud` user token sem scope `androidpublisher`. ADC login com scope foi **iniciado** (browser OAuth aberto) mas **não concluído** (sem `application_default_credentials.json`). Sem service account no projeto.
+4. **Sandbox do agente:** relaunch Chrome com `--remote-debugging-port` falha (`SingletonLock: Operation not permitted`) — não dá para CDP no perfil logado a partir do agente.
+5. Unity Ads: aba em `login.unity.com` — não autenticado.
 
-### Helper no Desktop
+### Helper no Desktop (ação humana, ~2 min)
 
-- `Desktop/PUBLICAR_INTERNAL_PLAY.command` — após habilitar JS do Apple Events no Chrome, tenta preencher notas pt-BR e avançar Próximo/Revisar/Publicar no draft atual.
+**Arquivo principal (duplo-clique):**  
+`Desktop/FAZER_ISTO_AGORA_LUMINA_PLAY.command`
+
+- Abre OAuth Google com scope Play → publica Internal via API + tenta 7 IAPs.
+- Se API falhar: abre Preparar versão + checklist de 3 cliques (notas já no clipboard).
+
+Extras (opcionais):
+
+- `Desktop/LUMINA_PLAY_CHECKLIST.html` — checklist visual
+- `Desktop/PUBLICAR_PLAY_VIA_API.command` — só API
+- `Desktop/FINALIZAR_PLAY_2MIN.command` / `PUBLICAR_INTERNAL_PLAY.command` — UI via Apple Events (precisa marcar menu JS)
 
 ### Links úteis
 
@@ -54,23 +65,23 @@ Estado: **READY_TO_SUBMIT** (submissão à review só junto com a versão do app
 
 ## Play IAP
 
-- **Não criados** nesta sessão (mesmos blockers de UI/API).
+- **Não criados** (mesmos blockers UI/API).
 - SKUs alvo = `docs/STORE_IAP_SKUS.md` (mesmos IDs da Apple).
-- Conta merchant / pagamentos: **não verificada** — se a página de monetização pedir setup de merchant, é blocker adicional para preços BRL.
+- Conta merchant / pagamentos: **não verificada** — se monetização pedir setup, é blocker para preços BRL.
 
 ## Unity Ads
 
-- **Pendente.** Sessão Unity Dashboard não autenticada (aba em login). Game IDs não configurados.
+- **Pendente.** Sessão Unity Dashboard não autenticada.
 
 ## Não enviar iOS deste Mac
 
 macOS 27.0 beta → **ITMS-90111**. Archive App Store só em macOS estável.
 
-## Ainda pendente (ação humana / próxima sessão)
+## Ainda pendente (ação humana)
 
-1. Chrome: ativar **Permitir o JavaScript do Eventos da Apple** (ou usar browser MCP estável) → confirmar AAB 0.1.2 (3) no draft → notas → **Iniciar implantação** no teste interno.
-2. Alternativa: rodar `Desktop/PUBLICAR_INTERNAL_PLAY.command` com JS Apple Events ligado.
-3. Criar 7 Play IAPs (IDs iguais à Apple) + merchant account se pedido.
+1. Duplo-clique `Desktop/FAZER_ISTO_AGORA_LUMINA_PLAY.command` → Permitir no Google **ou** 3 cliques manuais no draft.
+2. Confirmar Internal Testing com 0.1.2.
+3. Criar 7 Play IAPs (+ merchant se pedido).
 4. Unity Ads Game IDs.
 5. iOS em Mac estável.
 
