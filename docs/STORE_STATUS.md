@@ -1,16 +1,25 @@
 # Lumina Match — Store Status
 
-**Branch:** `feat/competitive-store`  
-**Updated:** 2026-07-18 (sessão 3 — Internal Testing publicado)  
-**Marketing version:** `0.1.2` · Android versionCode `3` · iOS build `4`
+**Branch:** `feat/competitive-store` @ `2b49270`  
+**Updated:** 2026-07-21 (build 0.1.3 local)  
+**Marketing version:** `0.1.3` · Android versionCode `4` · iOS build `5` (ProjectSettings / BuildScripts)
 
 ## Builds (ready locally)
 
 | Artefato | Path | Status |
 |----------|------|--------|
-| Android AAB | Desktop `LuminaMatch-0.1.2.aab` (= `Builds/Android/LuminaMatch-release.aab`) | `package=com.marcosaas.luminamatch`, `versionName=0.1.2`, `versionCode=3` — **já na biblioteca Play** |
+| Android APK | Desktop `LuminaMatch-0.1.3.apk` (= `Builds/Android/LuminaMatch-release.apk`) | `package=com.marcosaas.luminamatch`, `versionName=0.1.3`, `versionCode=4`, arm64, minSdk 26 — **sideload / adb** |
+| Android AAB | Desktop `LuminaMatch-0.1.3.aab` (= `Builds/Android/LuminaMatch-release.aab`) | mesmo versionCode **4** — upload Play Internal Testing |
 | iOS IPA | Desktop `LuminaMatch-build4.ipa` (0.1.2 / 4) | Archive OK neste Mac; upload App Store bloqueado por macOS beta |
-| EditMode | 26/26 | Verde |
+| EditMode | 26/26 (pré-0.1.3) | Verde na sessão anterior |
+
+## Install / Play (0.1.3)
+
+- **adb:** nenhum device conectado na build de 2026-07-21 — instalar com:
+  - `adb install -r ~/Desktop/LuminaMatch-0.1.3.apk`
+  - (adb Unity:) `/Applications/Unity/Hub/Editor/6000.5.0f1/PlaybackEngines/AndroidPlayer/SDK/platform-tools/adb`
+- **Play Internal Testing:** upload do AAB `~/Desktop/LuminaMatch-0.1.3.aab` (versionCode **4** > 3 já publicado).
+- Internal testing: https://play.google.com/console/u/0/developers/6604076546202815303/app/4972110585725182702/tracks/internal-testing
 
 ## App Store Connect IAP (feito 2026-07-17 via API)
 
@@ -27,25 +36,11 @@ Estado: **READY_TO_SUBMIT** (submissão à review só junto com a versão do app
 | `...remove_ads` | R$ 19,90 |
 | `...starter_pack` | R$ 9,90 |
 
-## Play Console — Internal Testing (PUBLICADO 2026-07-18 ~23:47)
+## Play Console — Internal Testing (PUBLICADO 2026-07-18 ~23:47 — ainda 0.1.2)
 
 - App ID: `4972110585725182702` · Developer: `6604076546202815303`
-- **Status: Disponível para testadores internos**
-- Release name: `0.1.2 e código 3`
-- Artifact: App Bundle **3 (0.1.2)** — ABI `arm64-v8a`, minSdk 26, targetSdk 36
-- Notas pt-BR: build competitivo store / IAP-Ads / teste interno
-- **Rebuild NÃO foi necessário** — reupload do AAB falhou com “código de versão 3 já foi usado”; o artefato foi **anexado da biblioteca** e publicado via “Salvar e publicar”
-
-### Device compatibility note
-
-- Aviso antigo de ~12.479 devices dropados vs stub/build anterior: esperado em primeiro AAB “de verdade” (minSdk 26 + ARM64-only).
-- Na review desta release vs `2 (0.1.1)`: tabela mostrou **0** dispositivos perdidos (mesmo ABI/minSdk). Avisos restantes = tamanho APK, falta mapping/símbolos nativos (não bloqueiam Internal).
-
-### Automação usada
-
-- Chrome AppleScript + `execute javascript` (funcionou nesta sessão).
-- Fluxo: biblioteca → bundle 3 → Avançar → Salvar e publicar → confirmar diálogo.
-- Android Publisher API ainda bloqueada (ADC sem quota project GCP / user token sem scope). Helper Desktop permanece útil para IAPs pós-merchant.
+- **Status (último publicado):** Disponível para testadores internos — **0.1.2 / code 3**
+- Próximo: publicar **0.1.3 / code 4** via AAB acima
 
 ### Links
 
@@ -71,9 +66,10 @@ macOS 27.0 beta → **ITMS-90111**. Archive App Store só em macOS estável.
 ## Ainda pendente (ação humana)
 
 1. ~~Internal Testing 0.1.2~~ **FEITO** (code 3).
-2. Configurar conta merchant Google Payments → criar 7 Play IAPs.
-3. Unity Ads Game IDs.
-4. iOS em Mac estável.
+2. **Upload Internal Testing 0.1.3** (code 4) — AAB no Desktop **ou** sideload APK via USB.
+3. Configurar conta merchant Google Payments → criar 7 Play IAPs.
+4. Unity Ads Game IDs.
+5. iOS em Mac estável.
 
 ## Privacy
 
