@@ -40,6 +40,18 @@ namespace LuminaMatch.UI
 
         const float AutoHintIdleSeconds = 12f;
 
+        /// <summary>
+        /// Lowers gameplay HUD/board by ~1cm on phone.
+        /// Reference canvas 1080×1920; ~40–42 units ≈ 1cm at ~160dpi / similar phone density.
+        /// </summary>
+        const float GameplayUiDownShift = 42f;
+
+        /// <summary>Raises bottom Back/Sair (and keeps booster row spaced) — independent of board shift.</summary>
+        const float GameplayBackUpShift = 56f;
+
+        /// <summary>Raises menu Voltar buttons that sit too low on phone.</summary>
+        const float MenuBackUpShift = 48f;
+
         Font _font;
         Sprite _whiteSprite;
 
@@ -318,26 +330,29 @@ namespace LuminaMatch.UI
             AddLabel(PreLevelCopy.BoosterSummary(p), 22, new Vector2(0, -40), new Color(0.85f, 0.9f, 1f));
             AddLabel($"Vidas: {p.Data.Lives}/{p.Data.MaxLives}", 24, new Vector2(0, -120), Color.white);
             AddButton("Jogar (−1 vida)", new Vector2(0, -280), ConfirmStartLevel);
-            AddButton("Voltar", new Vector2(0, -400), () => Show(AppScreen.LevelSelect));
+            AddButton("Voltar", new Vector2(0, -400 + MenuBackUpShift), () => Show(AppScreen.LevelSelect));
         }
 
         void BuildGameplay()
         {
+            float dy = -GameplayUiDownShift;
+            float backY = -880f + GameplayBackUpShift;
+            float boostY = -780f + GameplayBackUpShift;
             var p = PlayerProgress.Instance;
             AddBackground(new Color(0.05f, 0.06f, 0.12f));
-            AddLabel($"Nível {_session.Level.LevelId}", 36, new Vector2(0, 880), Color.white);
-            AddLabel($"Movimentos: {_session.MovesLeft}   Score: {_session.Score}", 26, new Vector2(0, 800), Color.white);
-            AddLabel(ObjectiveText(), 24, new Vector2(0, 740), new Color(0.85f, 0.9f, 1f));
-            BuildObjectiveIcons(new Vector2(0, 700));
+            AddLabel($"Nível {_session.Level.LevelId}", 36, new Vector2(0, 880 + dy), Color.white);
+            AddLabel($"Movimentos: {_session.MovesLeft}   Pontos: {_session.Score}", 26, new Vector2(0, 800 + dy), Color.white);
+            AddLabel(ObjectiveText(), 24, new Vector2(0, 740 + dy), new Color(0.85f, 0.9f, 1f));
+            BuildObjectiveIcons(new Vector2(0, 700 + dy));
             string tut = TutorialDirector.GameplayHint(_session.Level.LevelId, PlayerProgress.Instance.Data.TutorialStep);
             if (!string.IsNullOrEmpty(tut))
-                AddLabel(tut, 22, new Vector2(0, 660), new Color(1f, 0.9f, 0.55f));
-            AddLabel($"H:{p.Data.Hammers}  S:{p.Data.Swaps}  L:{p.Data.LineBlasts}", 22, new Vector2(0, 610), Color.white);
+                AddLabel(tut, 22, new Vector2(0, 660 + dy), new Color(1f, 0.9f, 0.55f));
+            AddLabel($"Martelo:{p.Data.Hammers}  Troca:{p.Data.Swaps}  Linha:{p.Data.LineBlasts}", 22, new Vector2(0, 610 + dy), Color.white);
 
             if (_pendingBooster.HasValue)
-                AddLabel($"Booster ativo: {_pendingBooster} — toque numa gema", 22, new Vector2(0, 560), new Color(1f, 0.85f, 0.4f));
+                AddLabel($"Poder ativo: {UiLabels.Booster(_pendingBooster.Value)} — toque numa gema", 22, new Vector2(0, 560 + dy), new Color(1f, 0.85f, 0.4f));
 
-            _boardPresenter.Bind(_root, _session.Board, new Vector2(0, -40), 820, _whiteSprite);
+            _boardPresenter.Bind(_root, _session.Board, new Vector2(0, -40 + dy), 820, _whiteSprite);
             _boardPresenter.Refresh(_selectedCell);
             if (_hintA.HasValue)
             {
@@ -349,11 +364,12 @@ namespace LuminaMatch.UI
                 SfxPlayer.Instance?.PlayHint();
             }
 
-            AddButton("Dica", new Vector2(-360, -780), ShowHint, new Vector2(180, 80));
-            AddButton("Martelo", new Vector2(-120, -780), () => ActivateBooster(BoosterType.Hammer), new Vector2(180, 80));
-            AddButton("Troca", new Vector2(120, -780), () => ActivateBooster(BoosterType.Swap), new Vector2(180, 80));
-            AddButton("Linha", new Vector2(360, -780), () => ActivateBooster(BoosterType.LineBlast), new Vector2(180, 80));
-            AddButton("Sair", new Vector2(0, -880), () =>
+            // Bottom chrome: raised independently — do NOT follow board down-shift.
+            AddButton("Dica", new Vector2(-360, boostY), ShowHint, new Vector2(180, 80));
+            AddButton("Martelo", new Vector2(-120, boostY), () => ActivateBooster(BoosterType.Hammer), new Vector2(180, 80));
+            AddButton("Troca", new Vector2(120, boostY), () => ActivateBooster(BoosterType.Swap), new Vector2(180, 80));
+            AddButton("Linha", new Vector2(360, boostY), () => ActivateBooster(BoosterType.LineBlast), new Vector2(180, 80));
+            AddButton("Voltar", new Vector2(0, backY), () =>
             {
                 _lastWon = false;
                 Show(AppScreen.Result);
@@ -397,7 +413,7 @@ namespace LuminaMatch.UI
             }
             else
             {
-                _statusMessage = "Sem jogadas óbvias — use um booster.";
+                _statusMessage = "Sem jogadas óbvias — use um poder.";
                 _hintA = _hintB = null;
             }
             Rebuild();
@@ -411,8 +427,8 @@ namespace LuminaMatch.UI
                 int left = _session.ObjectiveRemaining(o);
                 parts.Append(o.Type switch
                 {
-                    ObjectiveType.CollectColor => $"Coletar {o.Color}: {left}  ",
-                    ObjectiveType.Score => $"Score: {left}  ",
+                    ObjectiveType.CollectColor => $"Coletar {UiLabels.Gem(o.Color)}: {left}  ",
+                    ObjectiveType.Score => $"Pontos: {left}  ",
                     ObjectiveType.ClearBlockers => $"Bloqueios: {left}  ",
                     _ => ""
                 });
@@ -556,17 +572,17 @@ namespace LuminaMatch.UI
                     {
                         MonetizationHub.Instance.Iap.Purchase(IapProductId.StarterPack, _ => Show(AppScreen.Home));
                     });
-                    AddButton("Agora não", new Vector2(0, -400), () => TryStartLevel(_session.Level.LevelId + 1));
+                    AddButton("Agora não", new Vector2(0, -400 + MenuBackUpShift), () => TryStartLevel(_session.Level.LevelId + 1));
                 }
                 else
                 {
-                    AddButton("Próximo nível", new Vector2(0, -280), () => TryStartLevel(_session.Level.LevelId + 1));
+                    AddButton("Próximo nível", new Vector2(0, -280 + MenuBackUpShift), () => TryStartLevel(_session.Level.LevelId + 1));
                 }
             }
             else
             {
                 AddLabel("Sem movimentos", 48, new Vector2(0, 400), new Color(1f, 0.5f, 0.5f));
-                AddLabel($"Continuar (+5 moves) — {PlayerProgress.ContinueCost} moedas", 24, new Vector2(0, 280), Color.white);
+                AddLabel($"Continuar (+5 movimentos) — {PlayerProgress.ContinueCost} moedas", 24, new Vector2(0, 280), Color.white);
                 AddButton("Continuar (moedas)", new Vector2(0, 120), () =>
                 {
                     if (PlayerProgress.Instance.TrySpendCoins(PlayerProgress.ContinueCost))
@@ -595,8 +611,8 @@ namespace LuminaMatch.UI
                 });
             }
 
-            AddButton("Mapa", new Vector2(0, -180), () => Show(AppScreen.LevelSelect));
-            AddButton("Início", new Vector2(0, -320), () => Show(AppScreen.Home));
+            AddButton("Mapa", new Vector2(0, -180 + MenuBackUpShift), () => Show(AppScreen.LevelSelect));
+            AddButton("Início", new Vector2(0, -320 + MenuBackUpShift), () => Show(AppScreen.Home));
         }
 
         void BuildShop()
@@ -616,7 +632,7 @@ namespace LuminaMatch.UI
                     iap.Purchase(IapProductId.CoinsMedium, ok =>
                     {
                         if (ok) OfferService.MarkDailyClaimed(PlayerProgress.Instance, System.DateTime.UtcNow);
-                        _statusMessage = ok ? "Oferta diária reivindicada!" : "Falha na compra";
+                        _statusMessage = ok ? "Oferta diária resgatada!" : "Falha na compra.";
                         Rebuild();
                     });
                 }, new Vector2(720, 90));
@@ -629,7 +645,7 @@ namespace LuminaMatch.UI
                 {
                     iap.Purchase(IapProductId.StarterPack, ok =>
                     {
-                        _statusMessage = ok ? "Pacote estreia OK!" : "Falha na compra";
+                        _statusMessage = ok ? "Pacote estreia comprado!" : "Falha na compra.";
                         Rebuild();
                     });
                 }, new Vector2(720, 90));
@@ -645,7 +661,7 @@ namespace LuminaMatch.UI
                 {
                     iap.Purchase(captured, ok =>
                     {
-                        _statusMessage = ok ? $"Compra OK: {captured}" : "Falha na compra";
+                        _statusMessage = ok ? $"Compra concluída: {ProductLabel(captured)}" : "Falha na compra.";
                         Rebuild();
                     });
                 }, new Vector2(720, 90));
@@ -658,11 +674,11 @@ namespace LuminaMatch.UI
             IapProductId.CoinsSmall => "500 moedas",
             IapProductId.CoinsMedium => "1500 moedas",
             IapProductId.CoinsLarge => "5000 moedas",
-            IapProductId.LivesRefill => "Encher vidas",
-            IapProductId.BoosterPack => "Pack boosters",
+            IapProductId.LivesRefill => "Recarregar vidas",
+            IapProductId.BoosterPack => "Pacote de poderes",
             IapProductId.RemoveAds => "Remover anúncios",
             IapProductId.StarterPack => "Pacote estreia",
-            _ => id.ToString()
+            _ => "Item"
         };
 
         void BuildOutOfLives()
@@ -679,8 +695,8 @@ namespace LuminaMatch.UI
                     Show(AppScreen.Home);
                 });
             });
-            AddButton("Comprar vidas", new Vector2(0, -120), () => Show(AppScreen.Shop));
-            AddButton("Voltar", new Vector2(0, -260), () => Show(AppScreen.Home));
+            AddButton("Comprar vidas", new Vector2(0, -120 + MenuBackUpShift), () => Show(AppScreen.Shop));
+            AddButton("Voltar", new Vector2(0, -260 + MenuBackUpShift), () => Show(AppScreen.Home));
         }
 
         // --- UI helpers ---

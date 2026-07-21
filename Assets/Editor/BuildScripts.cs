@@ -66,8 +66,8 @@ namespace LuminaMatch.Editor
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.marcosaas.luminamatch");
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel24;
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
-            PlayerSettings.bundleVersion = "0.1.2";
-            PlayerSettings.Android.bundleVersionCode = 3;
+            PlayerSettings.bundleVersion = "0.1.3";
+            PlayerSettings.Android.bundleVersionCode = 4;
 
             try
             {
@@ -162,8 +162,8 @@ namespace LuminaMatch.Editor
             ApplyAppIconIfPresent();
             PlayerSettings.iOS.sdkVersion = sdk;
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, "com.marcosaas.luminamatch");
-            PlayerSettings.bundleVersion = "0.1.2";
-            PlayerSettings.iOS.buildNumber = "4";
+            PlayerSettings.bundleVersion = "0.1.3";
+            PlayerSettings.iOS.buildNumber = "5";
             PlayerSettings.iOS.appleEnableAutomaticSigning = true;
             // Encryption compliance for apps without custom crypto
             PlayerSettings.iOS.allowHTTPDownload = false;

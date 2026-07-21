@@ -190,6 +190,22 @@ namespace LuminaMatch.Tests
             var result = board.ResolveMatches(matches);
             Assert.Greater(result.Score, 0);
         }
+
+        [Test]
+        public void Refill_DoesNotRecolorOccupiedCells()
+        {
+            var grid = new Cell[3, 3];
+            for (int y = 0; y < 3; y++)
+            for (int x = 0; x < 3; x++)
+                grid[x, y] = new Cell { Color = GemColor.Sapphire };
+
+            grid[1, 1].Color = GemColor.None;
+            var board = new BoardModel(grid, 5, 11);
+            board.Refill();
+            Assert.AreEqual(GemColor.Sapphire, board.Grid[0, 0].Color);
+            Assert.AreEqual(GemColor.Sapphire, board.Grid[2, 2].Color);
+            Assert.AreNotEqual(GemColor.None, board.Grid[1, 1].Color);
+        }
     }
 
     public class LevelCatalogTests

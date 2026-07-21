@@ -20,7 +20,8 @@ namespace LuminaMatch.UI
         public static string GameplayHint(int levelId, int tutorialStep)
         {
             if (tutorialStep >= 3) return "";
-            if (levelId == 1) return "Troque duas gemas vizinhas para fazer 3 iguais.";
+            if (levelId == 1)
+                return "Troque gemas vizinhas para fazer 3 iguais. Depois elas caem e novas entram no topo.";
             if (levelId == 2) return "Olhe o objetivo no topo — colete o que pedir.";
             if (levelId == 3) return "Cada vitória ajuda a restaurar o palácio.";
             return "";

@@ -1,7 +1,6 @@
 using System.Text;
 using LuminaMatch.Economy;
 using LuminaMatch.Match3;
-using UnityEngine;
 
 namespace LuminaMatch.UI.Screens
 {
@@ -18,10 +17,10 @@ namespace LuminaMatch.UI.Screens
             {
                 sb.AppendLine(o.Type switch
                 {
-                    ObjectiveType.CollectColor => $"• Coletar {o.Amount} gemas {o.Color}",
+                    ObjectiveType.CollectColor => $"• Coletar {o.Amount} gemas {UiLabels.Gem(o.Color)}",
                     ObjectiveType.Score => $"• Alcançar {o.Amount} pontos",
                     ObjectiveType.ClearBlockers => $"• Limpar {o.Amount} bloqueios",
-                    _ => $"• {o.Type} {o.Amount}"
+                    _ => $"• Objetivo {o.Amount}"
                 });
             }
             sb.Append($"Movimentos: {level.Moves}");
@@ -29,6 +28,6 @@ namespace LuminaMatch.UI.Screens
         }
 
         public static string BoosterSummary(PlayerProgress p)
-            => $"Boosters — H:{p.Data.Hammers}  S:{p.Data.Swaps}  L:{p.Data.LineBlasts}";
+            => $"Poderes — Martelo:{p.Data.Hammers}  Troca:{p.Data.Swaps}  Linha:{p.Data.LineBlasts}";
     }
 }
