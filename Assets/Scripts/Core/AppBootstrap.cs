@@ -41,6 +41,11 @@ namespace LuminaMatch.Core
                 if (PlayerProgress.Instance == null)
                     _ = new PlayerProgress();
 
+                if (FindFirstObjectByType<MusicPlayer>() == null)
+                    gameObject.AddComponent<MusicPlayer>();
+                else
+                    MusicPlayer.Instance?.ApplyFromSave();
+
                 if (FindFirstObjectByType<UiRoot>() == null)
                     gameObject.AddComponent<UiRoot>();
 

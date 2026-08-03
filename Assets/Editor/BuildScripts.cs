@@ -66,8 +66,8 @@ namespace LuminaMatch.Editor
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.marcosaas.luminamatch");
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel24;
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
-            PlayerSettings.bundleVersion = "0.1.3";
-            PlayerSettings.Android.bundleVersionCode = 4;
+            PlayerSettings.bundleVersion = "0.1.24";
+            PlayerSettings.Android.bundleVersionCode = 32;
 
             try
             {
