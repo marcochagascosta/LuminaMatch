@@ -37,6 +37,7 @@ namespace LuminaMatch.UI
         float _lastInputTime;
         bool _autoHintAttempted;
         BoardPresenter _boardPresenter;
+        bool _settingsOpen;
 
         const float AutoHintIdleSeconds = 12f;
 
@@ -45,6 +46,12 @@ namespace LuminaMatch.UI
         /// Reference canvas 1080×1920; ~40–42 units ≈ 1cm at ~160dpi / similar phone density.
         /// </summary>
         const float GameplayUiDownShift = 42f;
+
+        /// <summary>~2.5cm lower for the settings gear on gameplay (42u ≈ 1cm).</summary>
+        const float GameplayGearExtraDown = 105f;
+
+        /// <summary>Home gear: further right than the far-left edge (was ~-460).</summary>
+        const float HomeGearX = -320f;
 
         /// <summary>Raises bottom Back/Sair (and keeps booster row spaced) — independent of board shift.</summary>
         const float GameplayBackUpShift = 56f;
@@ -167,6 +174,9 @@ namespace LuminaMatch.UI
                 case AppScreen.Shop: BuildShop(); break;
                 case AppScreen.OutOfLives: BuildOutOfLives(); break;
             }
+
+            if (_settingsOpen)
+                BuildSettingsModal();
         }
 
         void BuildHome()
@@ -222,6 +232,7 @@ namespace LuminaMatch.UI
 
             AddButton("Loja", new Vector2(0, shopY), () => Show(AppScreen.Shop));
             AddButton($"Continuar nível {p.Data.HighestUnlockedLevel}", new Vector2(0, continueY), () => TryStartLevel(p.Data.HighestUnlockedLevel));
+            AddGearButton(new Vector2(HomeGearX, 880f));
         }
 
         void BuildLevelSelect()
@@ -374,6 +385,7 @@ namespace LuminaMatch.UI
                 _lastWon = false;
                 Show(AppScreen.Result);
             }, new Vector2(220, 70));
+            AddGearButton(new Vector2(-420f, 880f + dy - GameplayGearExtraDown));
         }
 
         void BuildObjectiveIcons(Vector2 center)
@@ -444,6 +456,8 @@ namespace LuminaMatch.UI
 
         void OnCellClicked(int x, int y)
         {
+            if (_settingsOpen) return;
+
             ResetIdleHintTimer();
             _hintA = _hintB = null;
 
@@ -455,18 +469,22 @@ namespace LuminaMatch.UI
 
             if (_pendingBooster == BoosterType.Hammer)
             {
+                bool used = false;
                 if (PlayerProgress.Instance.TryUseBooster(BoosterType.Hammer))
-                    _session.TryHammer(x, y);
+                    used = _session.TryHammer(x, y);
                 _pendingBooster = null;
+                if (used) Haptics.PulseMove();
                 AfterMove();
                 return;
             }
 
             if (_pendingBooster == BoosterType.LineBlast)
             {
+                bool used = false;
                 if (PlayerProgress.Instance.TryUseBooster(BoosterType.LineBlast))
-                    _session.TryLineBlast(y);
+                    used = _session.TryLineBlast(y);
                 _pendingBooster = null;
+                if (used) Haptics.PulseMove();
                 AfterMove();
                 return;
             }
@@ -490,19 +508,20 @@ namespace LuminaMatch.UI
                 return;
             }
 
+            bool moved;
             if (_pendingBooster == BoosterType.Swap)
             {
-                if (PlayerProgress.Instance.TryUseBooster(BoosterType.Swap))
-                    _session.ForceSwap(sx, sy, x, y);
+                moved = PlayerProgress.Instance.TryUseBooster(BoosterType.Swap)
+                    && _session.ForceSwap(sx, sy, x, y);
                 _pendingBooster = null;
             }
             else
-                _session.TrySwap(sx, sy, x, y);
+                moved = _session.TrySwap(sx, sy, x, y);
 
-            if (_session.Score > 0)
+            if (moved)
             {
                 SfxPlayer.Instance?.PlayMatch();
-                // Prefer power cue when recent score jump is large (combo / board power).
+                Haptics.PulseMove();
                 if (_session.Score >= 120)
                     SfxPlayer.Instance?.PlayPower();
             }
@@ -709,6 +728,168 @@ namespace LuminaMatch.UI
             var img = go.GetComponent<Image>();
             img.sprite = _whiteSprite;
             img.color = color;
+        }
+
+        void AddGearButton(Vector2 pos)
+        {
+            var go = new GameObject("SettingsGear", typeof(RectTransform), typeof(Image), typeof(Button));
+            go.transform.SetParent(_root, false);
+            var rt = go.GetComponent<RectTransform>();
+            rt.sizeDelta = new Vector2(88, 88);
+            rt.anchoredPosition = pos;
+            var img = go.GetComponent<Image>();
+            img.sprite = _whiteSprite;
+            img.color = new Color(0.22f, 0.38f, 0.72f, 0.95f);
+            go.GetComponent<Button>().onClick.AddListener(() =>
+            {
+                _settingsOpen = true;
+                SfxPlayer.Instance?.PlayClick();
+                Rebuild();
+            });
+
+            var iconGo = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            iconGo.transform.SetParent(go.transform, false);
+            var irt = iconGo.GetComponent<RectTransform>();
+            irt.sizeDelta = new Vector2(56, 56);
+            irt.anchoredPosition = Vector2.zero;
+            var iimg = iconGo.GetComponent<Image>();
+            iimg.sprite = SettingsIcons.Gear;
+            iimg.color = Color.white;
+            iimg.raycastTarget = false;
+            iimg.preserveAspect = true;
+        }
+
+        void BuildSettingsModal()
+        {
+            var p = PlayerProgress.Instance;
+            if (p == null) return;
+
+            var dimGo = new GameObject("SettingsDim", typeof(RectTransform), typeof(Image), typeof(Button));
+            dimGo.transform.SetParent(_root, false);
+            Stretch(dimGo.GetComponent<RectTransform>());
+            var dimImg = dimGo.GetComponent<Image>();
+            dimImg.sprite = _whiteSprite;
+            dimImg.color = new Color(0f, 0f, 0f, 0.55f);
+            dimGo.GetComponent<Button>().onClick.AddListener(CloseSettings);
+
+            var panel = new GameObject("SettingsPanel", typeof(RectTransform), typeof(Image));
+            panel.transform.SetParent(_root, false);
+            var panelRt = panel.GetComponent<RectTransform>();
+            panelRt.sizeDelta = new Vector2(720, 520);
+            panelRt.anchoredPosition = Vector2.zero;
+            panel.GetComponent<Image>().sprite = _whiteSprite;
+            panel.GetComponent<Image>().color = new Color(0.94f, 0.97f, 1f, 0.98f);
+
+            var border = new GameObject("Border", typeof(RectTransform), typeof(Image));
+            border.transform.SetParent(panel.transform, false);
+            Stretch(border.GetComponent<RectTransform>());
+            border.transform.SetAsFirstSibling();
+            border.GetComponent<Image>().sprite = _whiteSprite;
+            border.GetComponent<Image>().color = new Color(0.45f, 0.72f, 0.95f, 1f);
+            var inset = new GameObject("Inset", typeof(RectTransform), typeof(Image));
+            inset.transform.SetParent(panel.transform, false);
+            var insetRt = inset.GetComponent<RectTransform>();
+            Stretch(insetRt);
+            insetRt.offsetMin = new Vector2(10, 10);
+            insetRt.offsetMax = new Vector2(-10, -10);
+            inset.GetComponent<Image>().sprite = _whiteSprite;
+            inset.GetComponent<Image>().color = new Color(0.96f, 0.98f, 1f, 1f);
+
+            var header = new GameObject("Header", typeof(RectTransform), typeof(Image));
+            header.transform.SetParent(panel.transform, false);
+            var headerRt = header.GetComponent<RectTransform>();
+            headerRt.anchorMin = new Vector2(0, 1);
+            headerRt.anchorMax = new Vector2(1, 1);
+            headerRt.pivot = new Vector2(0.5f, 1f);
+            headerRt.sizeDelta = new Vector2(0, 90);
+            headerRt.anchoredPosition = Vector2.zero;
+            header.GetComponent<Image>().sprite = _whiteSprite;
+            header.GetComponent<Image>().color = new Color(0.16f, 0.28f, 0.55f, 1f);
+
+            var title = CreateText(header.transform, "CONFIGURAÇÕES", 34);
+            Stretch(title.rectTransform);
+            title.alignment = TextAnchor.MiddleCenter;
+            title.color = Color.white;
+            title.fontStyle = FontStyle.Bold;
+
+            var closeGo = new GameObject("Close", typeof(RectTransform), typeof(Image), typeof(Button));
+            closeGo.transform.SetParent(panel.transform, false);
+            var closeRt = closeGo.GetComponent<RectTransform>();
+            closeRt.anchorMin = closeRt.anchorMax = new Vector2(1, 1);
+            closeRt.pivot = new Vector2(1, 1);
+            closeRt.sizeDelta = new Vector2(72, 72);
+            closeRt.anchoredPosition = new Vector2(-18, -10);
+            closeGo.GetComponent<Image>().sprite = _whiteSprite;
+            closeGo.GetComponent<Image>().color = new Color(0.45f, 0.28f, 0.75f, 1f);
+            closeGo.GetComponent<Button>().onClick.AddListener(CloseSettings);
+            var closeLabel = CreateText(closeGo.transform, "X", 32);
+            Stretch(closeLabel.rectTransform);
+            closeLabel.alignment = TextAnchor.MiddleCenter;
+            closeLabel.color = Color.white;
+            closeLabel.fontStyle = FontStyle.Bold;
+
+            AddSettingsToggle(panel.transform, new Vector2(-210, 60), SettingsIcons.Speaker(p.Data.SfxOn), p.Data.SfxOn, on =>
+            {
+                p.SetSfxOn(on);
+                SfxPlayer.Instance?.PlayClick();
+                Rebuild();
+            });
+            AddSettingsToggle(panel.transform, new Vector2(0, 60), SettingsIcons.Music(p.Data.MusicOn), p.Data.MusicOn, on =>
+            {
+                p.SetMusicOn(on);
+                Rebuild();
+            });
+            AddSettingsToggle(panel.transform, new Vector2(210, 60), SettingsIcons.Vibrate(p.Data.VibrateOn), p.Data.VibrateOn, on =>
+            {
+                p.SetVibrateOn(on);
+                if (on) Haptics.PulseMove();
+                Rebuild();
+            });
+
+            var hint = CreateText(panel.transform, "Sons   ·   Música   ·   Vibração", 22);
+            hint.rectTransform.anchoredPosition = new Vector2(0, -100);
+            hint.rectTransform.sizeDelta = new Vector2(620, 40);
+            hint.alignment = TextAnchor.MiddleCenter;
+            hint.color = new Color(0.3f, 0.35f, 0.45f, 1f);
+
+            var ver = CreateText(panel.transform, $"v{Application.version}", 20);
+            ver.rectTransform.anchoredPosition = new Vector2(0, -180);
+            ver.rectTransform.sizeDelta = new Vector2(200, 36);
+            ver.alignment = TextAnchor.MiddleCenter;
+            ver.color = new Color(0.85f, 0.45f, 0.2f, 1f);
+        }
+
+        void AddSettingsToggle(Transform parent, Vector2 pos, Sprite icon, bool on, System.Action<bool> onToggle)
+        {
+            var go = new GameObject("Toggle", typeof(RectTransform), typeof(Image), typeof(Button));
+            go.transform.SetParent(parent, false);
+            var rt = go.GetComponent<RectTransform>();
+            rt.sizeDelta = new Vector2(150, 150);
+            rt.anchoredPosition = pos;
+            var img = go.GetComponent<Image>();
+            img.sprite = _whiteSprite;
+            img.color = on
+                ? new Color(0.55f, 0.35f, 0.85f, 1f)
+                : new Color(0.55f, 0.58f, 0.65f, 1f);
+            go.GetComponent<Button>().onClick.AddListener(() => onToggle(!on));
+
+            var iconGo = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            iconGo.transform.SetParent(go.transform, false);
+            var irt = iconGo.GetComponent<RectTransform>();
+            irt.sizeDelta = new Vector2(84, 84);
+            irt.anchoredPosition = new Vector2(0, 8);
+            var iimg = iconGo.GetComponent<Image>();
+            iimg.sprite = icon;
+            iimg.color = Color.white;
+            iimg.raycastTarget = false;
+            iimg.preserveAspect = true;
+        }
+
+        void CloseSettings()
+        {
+            _settingsOpen = false;
+            SfxPlayer.Instance?.PlayClick();
+            Rebuild();
         }
 
         void AddLabel(string text, int size, Vector2 pos, Color color)

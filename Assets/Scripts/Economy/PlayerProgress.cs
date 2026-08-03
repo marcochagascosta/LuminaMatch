@@ -21,6 +21,10 @@ namespace LuminaMatch.Economy
         public bool StarterPackBought;
         public string DailyOfferDayKey;
         public bool StarterPackSeen;
+        public bool SettingsInitialized;
+        public bool MusicOn = true;
+        public bool SfxOn = true;
+        public bool VibrateOn = true;
     }
 
     public class PlayerProgress
@@ -60,6 +64,40 @@ namespace LuminaMatch.Economy
                 Data = new PlayerSaveData();
                 Save();
             }
+
+            EnsureSettingsDefaults();
+        }
+
+        void EnsureSettingsDefaults()
+        {
+            if (Data.SettingsInitialized) return;
+            Data.MusicOn = true;
+            Data.SfxOn = true;
+            Data.VibrateOn = true;
+            Data.SettingsInitialized = true;
+            Save();
+        }
+
+        public void SetMusicOn(bool on)
+        {
+            Data.MusicOn = on;
+            Data.SettingsInitialized = true;
+            Save();
+            Audio.MusicPlayer.Instance?.ApplyFromSave();
+        }
+
+        public void SetSfxOn(bool on)
+        {
+            Data.SfxOn = on;
+            Data.SettingsInitialized = true;
+            Save();
+        }
+
+        public void SetVibrateOn(bool on)
+        {
+            Data.VibrateOn = on;
+            Data.SettingsInitialized = true;
+            Save();
         }
 
         public void Save()
