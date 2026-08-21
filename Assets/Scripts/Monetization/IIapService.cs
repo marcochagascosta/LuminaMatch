@@ -19,7 +19,9 @@ namespace LuminaMatch.Monetization
     public interface IIapService
     {
         bool IsReady { get; }
+        string StatusText { get; }
         void Purchase(IapProductId id, Action<bool> onResult);
+        void RestorePurchases(Action<bool> onResult);
         string GetPriceLabel(IapProductId id);
     }
 
@@ -36,11 +38,12 @@ namespace LuminaMatch.Monetization
             { IapProductId.CoinsLarge, "R$ 39,90" },
             { IapProductId.LivesRefill, "R$ 6,90" },
             { IapProductId.BoosterPack, "R$ 14,90" },
-            { IapProductId.RemoveAds, "R$ 19,90" },
+            { IapProductId.RemoveAds, "R$ 49,90" },
             { IapProductId.StarterPack, "R$ 9,90" }
         };
 
         public bool IsReady => true;
+        public string StatusText => "Sandbox (dev)";
 
         public string GetPriceLabel(IapProductId id)
             => Prices.TryGetValue(id, out var p) ? p : "—";
@@ -56,6 +59,12 @@ namespace LuminaMatch.Monetization
 
             IapGrants.Apply(id, progress);
             Debug.Log($"[LuminaMatch] Sandbox IAP granted: {id}");
+            onResult?.Invoke(true);
+        }
+
+        public void RestorePurchases(Action<bool> onResult)
+        {
+            Debug.Log("[LuminaMatch] Sandbox restore — nothing to restore.");
             onResult?.Invoke(true);
         }
     }

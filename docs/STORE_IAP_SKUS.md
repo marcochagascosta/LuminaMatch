@@ -6,7 +6,7 @@ Map `IapProductId` → store product id (same on App Store Connect and Google Pl
 
 | IapProductId | Store product id | Type | Grant (via IapGrants) |
 |--------------|------------------|------|------------------------|
-| CoinsSmall | `com.marcosaas.luminamatch.coins_small` | Consumable | +500 moedas |
+| CoinsSmall | `com.marcosaas.luminamatch.coins_small` (Play Android: `...coins_small1`) | Consumable | +500 moedas |
 | CoinsMedium | `com.marcosaas.luminamatch.coins_medium` | Consumable | +1500 moedas |
 | CoinsLarge | `com.marcosaas.luminamatch.coins_large` | Consumable | +5000 moedas |
 | LivesRefill | `com.marcosaas.luminamatch.lives_refill` | Consumable | Enche vidas (max 5) |
@@ -17,7 +17,10 @@ Map `IapProductId` → store product id (same on App Store Connect and Google Pl
 ## Sandbox / dev
 
 - `MonetizationHub.UseProductionSdks = false` → `SandboxIapService` (instant local grants).
-- `UseProductionSdks = true` → `UnityIapService` stub logs warning and grants via `IapGrants` until Unity Purchasing is wired.
+- `UseProductionSdks = true` → `UnityIapService` (Unity Purchasing **4.15.1**, Google Play Billing Library **8.3.0**).
+- **Release:** se produto/loja indisponível → compra falha, **sem grant grátis**.
+- **Editor / DEVELOPMENT_BUILD:** fallback local ainda permitido.
+- Soft currency (vidas/boosters com moedas): `SoftShop` — ver `docs/BILLING_CHECKLIST.md`.
 
 ## ASC / Play Console checklist
 

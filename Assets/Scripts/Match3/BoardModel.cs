@@ -88,7 +88,7 @@ namespace LuminaMatch.Match3
         /// Clears matched gems, damages adjacent ice/box, applies gravity and refills.
         /// Returns collected gem counts by color and blockers cleared.
         /// </summary>
-        public ResolveResult ResolveMatches(HashSet<(int x, int y)> matches)
+        public ResolveResult ResolveMatches(HashSet<(int x, int y)> matches, bool allowPowerSpawns = true)
         {
             var result = new ResolveResult();
             if (matches == null || matches.Count == 0)
@@ -96,6 +96,9 @@ namespace LuminaMatch.Match3
 
             var originalMatches = new HashSet<(int x, int y)>(matches);
             var toClear = new HashSet<(int x, int y)>(matches);
+            var rocketsFired = new HashSet<(int x, int y)>();
+            var bombsFired = new HashSet<(int x, int y)>();
+            var disksFired = new HashSet<(int x, int y)>();
 
             // Expand any board powers included in the clear set (chain reactions).
             bool expanded;
@@ -105,7 +108,32 @@ namespace LuminaMatch.Match3
                 foreach (var (px, py) in new List<(int x, int y)>(toClear))
                 {
                     if (!InBounds(px, py)) continue;
-                    if (Grid[px, py].Power == BoardPowerType.None) continue;
+                    var power = Grid[px, py].Power;
+                    if (power == BoardPowerType.None) continue;
+                    if (power == BoardPowerType.Rocket && rocketsFired.Add((px, py)))
+                    {
+                        bool horiz = ((px + py) & 1) == 0;
+                        result.RocketEvents.Add(new RocketFxEvent
+                        {
+                            Horizontal = horiz,
+                            OriginX = px,
+                            OriginY = py,
+                            Line = horiz ? py : px
+                        });
+                    }
+                    else if (power == BoardPowerType.Bomb && bombsFired.Add((px, py)))
+                    {
+                        result.BombEvents.Add(new BombFxEvent { OriginX = px, OriginY = py });
+                    }
+                    else if (power == BoardPowerType.ColorDisk && disksFired.Add((px, py)))
+                    {
+                        result.ColorDiskEvents.Add(new ColorDiskFxEvent
+                        {
+                            OriginX = px,
+                            OriginY = py,
+                            Color = Grid[px, py].Color
+                        });
+                    }
                     foreach (var extra in PowerUpResolver.ExpandActivation(Grid, px, py))
                     {
                         if (toClear.Add(extra))
@@ -117,19 +145,23 @@ namespace LuminaMatch.Match3
             foreach (var (x, y) in originalMatches)
                 DamageNeighbors(x, y, toClear, result);
 
-            var spawns = MatchShapeAnalyzer.Analyze(Grid, originalMatches);
+            // Only spawn new rockets/bombs/disks from real matches — never from a power blast
+            // (color-disk clear sets look like "5-in-a-row" and were spawning extra weapons + fake wins).
+            var spawns = allowPowerSpawns
+                ? MatchShapeAnalyzer.Analyze(Grid, originalMatches)
+                : new List<PowerSpawn>();
 
             foreach (var (x, y) in toClear)
             {
                 if (Grid[x, y].IsHole) continue;
-                if (Grid[x, y].Blocker == BlockerType.Ice)
+                if (Grid[x, y].Blocker == BlockerType.Ice
+                    || Grid[x, y].Blocker == BlockerType.Box)
                 {
+                    // Powers hitting a blocker cell break it (same as adjacent match damage for boxes).
                     Grid[x, y].Blocker = BlockerType.None;
                     result.BlockersCleared++;
                     continue;
                 }
-                if (Grid[x, y].Blocker == BlockerType.Box)
-                    continue;
 
                 if (Grid[x, y].Color != GemColor.None)
                 {
@@ -189,13 +221,17 @@ namespace LuminaMatch.Match3
             }
 
             MatchFinder.Swap(Grid, x1, y1, x2, y2);
-            var clear = new HashSet<(int x, int y)>();
-            if (Grid[x1, y1].HasPower)
-                foreach (var c in PowerUpResolver.ExpandActivation(Grid, x1, y1)) clear.Add(c);
-            if (Grid[x2, y2].HasPower)
-                foreach (var c in PowerUpResolver.ExpandActivation(Grid, x2, y2)) clear.Add(c);
+            var clear = PowerUpResolver.ExpandCombo(Grid, x1, y1, x2, y2);
+            if (clear == null)
+            {
+                clear = new HashSet<(int x, int y)>();
+                if (Grid[x1, y1].HasPower)
+                    foreach (var c in PowerUpResolver.ExpandActivation(Grid, x1, y1)) clear.Add(c);
+                if (Grid[x2, y2].HasPower)
+                    foreach (var c in PowerUpResolver.ExpandActivation(Grid, x2, y2)) clear.Add(c);
+            }
             foreach (var m in FindMatches()) clear.Add(m);
-            result = ResolveMatches(clear);
+            result = ResolveMatches(clear, allowPowerSpawns: false);
             return true;
         }
 
@@ -215,6 +251,12 @@ namespace LuminaMatch.Match3
                 Grid[x, y].Blocker = BlockerType.None;
                 result.BlockersCleared++;
                 toClear.Add((x, y));
+            }
+            else if (Grid[x, y].Blocker == BlockerType.Ice)
+            {
+                // Adjacent match cracks ice; gem underneath stays.
+                Grid[x, y].Blocker = BlockerType.None;
+                result.BlockersCleared++;
             }
         }
 
@@ -245,12 +287,55 @@ namespace LuminaMatch.Match3
 
         public void Refill()
         {
+            // Fill bottom→top (y=0 is bottom) so match-avoidance sees settled neighbors.
             for (int y = 0; y < Height; y++)
             for (int x = 0; x < Width; x++)
             {
                 if (Grid[x, y].IsHole) continue;
                 if (Grid[x, y].Color == GemColor.None && Grid[x, y].Blocker != BlockerType.Box)
+                    Grid[x, y].Color = RandomColorAvoidingMatch(x, y);
+            }
+        }
+
+        /// <summary>
+        /// Guarantees the objective color appears on the board (early levels used to ask for Ruby with only 4 spawn colors).
+        /// </summary>
+        public void EnsureMinColorPresence(GemColor color, int minCount)
+        {
+            if (color == GemColor.None || (int)color < 1 || (int)color > ColorCount)
+                return;
+            minCount = Math.Max(1, minCount);
+
+            int count = 0;
+            var candidates = new List<(int x, int y)>();
+            for (int y = 0; y < Height; y++)
+            for (int x = 0; x < Width; x++)
+            {
+                if (Grid[x, y].IsHole || Grid[x, y].Blocker == BlockerType.Box) continue;
+                if (Grid[x, y].Color == color) count++;
+                else if (Grid[x, y].Color != GemColor.None)
+                    candidates.Add((x, y));
+            }
+
+            int need = minCount - count;
+            for (int i = 0; i < need && candidates.Count > 0; i++)
+            {
+                int pick = _rng.Next(candidates.Count);
+                var (x, y) = candidates[pick];
+                candidates.RemoveAt(pick);
+                Grid[x, y].Color = color;
+            }
+
+            // Avoid creating instant matches after force-paint.
+            int guard = 0;
+            while (FindMatches().Count > 0 && guard++ < 40)
+            {
+                foreach (var (x, y) in FindMatches())
+                {
+                    if (Grid[x, y].Color == color) continue;
                     Grid[x, y].Color = (GemColor)(_rng.Next(1, ColorCount + 1));
+                    break;
+                }
             }
         }
 
@@ -294,10 +379,31 @@ namespace LuminaMatch.Match3
             return true;
         }
 
-        bool InBounds(int x, int y) => x >= 0 && y >= 0 && x < Width && y < Height;
+        public bool InBounds(int x, int y) => x >= 0 && y >= 0 && x < Width && y < Height;
 
         static bool AreAdjacent(int x1, int y1, int x2, int y2)
             => Math.Abs(x1 - x2) + Math.Abs(y1 - y2) == 1;
+    }
+
+    public struct RocketFxEvent
+    {
+        public bool Horizontal;
+        public int OriginX;
+        public int OriginY;
+        public int Line;
+    }
+
+    public struct BombFxEvent
+    {
+        public int OriginX;
+        public int OriginY;
+    }
+
+    public struct ColorDiskFxEvent
+    {
+        public int OriginX;
+        public int OriginY;
+        public GemColor Color;
     }
 
     public class ResolveResult
@@ -305,6 +411,9 @@ namespace LuminaMatch.Match3
         public int Score;
         public int BlockersCleared;
         public readonly Dictionary<GemColor, int> Collected = new();
+        public readonly List<RocketFxEvent> RocketEvents = new();
+        public readonly List<BombFxEvent> BombEvents = new();
+        public readonly List<ColorDiskFxEvent> ColorDiskEvents = new();
 
         public void AddCollected(GemColor color)
         {

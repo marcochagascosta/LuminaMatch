@@ -31,6 +31,36 @@ namespace LuminaMatch.Editor
 
             var report = BuildPipeline.BuildPlayer(options);
             Debug.Log($"[Lumina Match] Android APK: {report.summary.result} -> {path}");
+            if (Application.isBatchMode)
+                EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
+        }
+
+        [MenuItem("Lumina Match/Build Android APK (Release)")]
+        public static void BuildAndroidApkRelease()
+        {
+            ProjectSetup.SetupScenes();
+            ConfigureAndroidCommon();
+            ApplyAndroidReleaseSigning();
+            ApplyAppIconIfPresent();
+
+            string dir = Path.Combine(Directory.GetParent(Application.dataPath)!.FullName, "Builds", "Android");
+            Directory.CreateDirectory(dir);
+            string path = Path.Combine(dir, "LuminaMatch-release.apk");
+
+            EditorUserBuildSettings.buildAppBundle = false;
+            EditorUserBuildSettings.androidBuildSystem = AndroidBuildSystem.Gradle;
+
+            var options = new BuildPlayerOptions
+            {
+                scenes = new[] { "Assets/Scenes/Boot.unity" },
+                locationPathName = path,
+                target = BuildTarget.Android,
+                options = BuildOptions.None
+            };
+
+            var report = BuildPipeline.BuildPlayer(options);
+            Debug.Log($"[Lumina Match] Android APK (Release): {report.summary.result} -> {path}");
+            EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
         }
 
         [MenuItem("Lumina Match/Build Android AAB (Release)")]
@@ -66,8 +96,8 @@ namespace LuminaMatch.Editor
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.marcosaas.luminamatch");
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel24;
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
-            PlayerSettings.bundleVersion = "0.1.3";
-            PlayerSettings.Android.bundleVersionCode = 4;
+            PlayerSettings.bundleVersion = "0.1.41";
+            PlayerSettings.Android.bundleVersionCode = 49;
 
             try
             {
@@ -162,9 +192,10 @@ namespace LuminaMatch.Editor
             ApplyAppIconIfPresent();
             PlayerSettings.iOS.sdkVersion = sdk;
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, "com.marcosaas.luminamatch");
-            PlayerSettings.bundleVersion = "0.1.3";
-            PlayerSettings.iOS.buildNumber = "5";
+            PlayerSettings.bundleVersion = "0.1.41";
+            PlayerSettings.iOS.buildNumber = "50";
             PlayerSettings.iOS.appleEnableAutomaticSigning = true;
+            PlayerSettings.iOS.appleDeveloperTeamID = "6LQQD54JHB";
             // Encryption compliance for apps without custom crypto
             PlayerSettings.iOS.allowHTTPDownload = false;
 

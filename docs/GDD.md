@@ -31,8 +31,8 @@ O **Palácio de Luz** (noite, cristal, ouro) desperta peça a peça conforme voc
 
 ## Economia / monetização (pressão moderada)
 
-- Max 5 vidas, regen 20 min
-- Continue: 900 moedas / +5 moves
+- Max 5 vidas, regen 30 min
+- Continue: 750 moedas / +5 moves
 - IAP: moedas P/M/G, vidas, boosters, remove ads, pacote estreia
 - Ads: rewarded (continue/vida); interstitial limitado (180s, sem tutorial)
 - Live ops leve: oferta diária + pacote de estreia

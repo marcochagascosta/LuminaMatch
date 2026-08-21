@@ -26,11 +26,24 @@ namespace LuminaMatch.Audio
         public void PlayFail() => PlayTone(220f, 0.15f, 0.3f);
         public void PlayPower() => PlayTone(1320f, 0.1f, 0.28f);
         public void PlayHint() => PlayTone(740f, 0.06f, 0.18f);
+        public void PlayRocket() => PlayTone(980f, 0.14f, 0.32f);
+        public void PlayBomb() => PlayTone(160f, 0.16f, 0.34f);
+        public void PlayColorDisk() => PlayTone(1180f, 0.12f, 0.3f);
+        public void PlayPalace() => PlayTone(784f, 0.22f, 0.32f);
+        public void PlayCombo() => PlayTone(1480f, 0.16f, 0.34f);
+        public void PlayBoxBreak() => PlayTone(300f, 0.1f, 0.28f);
+
+        bool SfxEnabled()
+        {
+            var p = Economy.PlayerProgress.Instance;
+            return p == null || p.Data.SfxOn;
+        }
 
         void PlayTone(float hz, float duration, float volume)
         {
             try
             {
+                if (!SfxEnabled()) return;
                 if (_source == null) return;
                 int sampleRate = 22050;
                 int samples = Mathf.Max(1, Mathf.CeilToInt(sampleRate * duration));

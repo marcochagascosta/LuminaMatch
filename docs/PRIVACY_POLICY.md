@@ -1,6 +1,6 @@
 # Privacy Policy — Lumina Match
 
-**Last updated:** 2026-07-16  
+**Last updated:** 2026-08-18  
 **Developer:** MarcoSaas / Marco Costa  
 **Contact:** Use the support email configured in App Store Connect / Google Play Console for Lumina Match.
 
@@ -21,8 +21,8 @@ Lumina Match is a casual match-3 game. Progress (lives, coins, boosters, levels)
 - No contact list access
 
 ### Third parties (when enabled in a store build)
-- **Apple App Store / Google Play** process payments
-- If ads are enabled later (Unity Ads / AdMob), those SDKs may collect advertising identifiers according to their own policies
+- **Google Play** processa compras no app
+- **Google AdMob** exibe anúncios (interstitial após derrota; rewarded se você escolher assistir). O SDK pode usar o identificador de publicidade do aparelho, conforme a [política da AdMob](https://support.google.com/admob/answer/6128543).
 
 ## Children
 

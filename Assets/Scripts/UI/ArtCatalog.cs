@@ -9,7 +9,7 @@ namespace LuminaMatch.UI
     public static class ArtCatalog
     {
         static bool _loaded;
-        static Sprite _crystal, _amber, _sapphire, _emerald, _ruby, _amethyst;
+        static Sprite _topaz, _amber, _sapphire, _emerald, _ruby, _amethyst;
         static Sprite _cell, _frame, _bg, _ice, _box;
         static Sprite _rocket, _bomb, _colorDisk;
         static Sprite _fallback;
@@ -28,7 +28,7 @@ namespace LuminaMatch.UI
             LoadIfNeeded();
             return c switch
             {
-                GemColor.Crystal => _crystal,
+                GemColor.Crystal => _topaz,
                 GemColor.Amber => _amber,
                 GemColor.Sapphire => _sapphire,
                 GemColor.Emerald => _emerald,
@@ -54,14 +54,19 @@ namespace LuminaMatch.UI
         {
             if (_loaded) return;
             _fallback = WhiteSprite();
-            _crystal = LoadSprite("Art/Gems/gem_crystal") ?? _fallback;
+            // Crystal slot uses Topázio (gem_crystal had persistent white-plate issues on device).
+            _topaz = LoadSprite("Art/Gems/gem_topaz")
+                ?? LoadSprite("Art/Gems/gem_amber")
+                ?? _fallback;
             _amber = LoadSprite("Art/Gems/gem_amber") ?? _fallback;
             _sapphire = LoadSprite("Art/Gems/gem_sapphire") ?? _fallback;
             _emerald = LoadSprite("Art/Gems/gem_emerald") ?? _fallback;
             _ruby = LoadSprite("Art/Gems/gem_ruby") ?? _fallback;
             _amethyst = LoadSprite("Art/Gems/gem_amethyst") ?? _fallback;
             _cell = LoadSprite("Art/Board/cell") ?? _fallback;
-            _frame = LoadSprite("Art/Board/board_frame") ?? _fallback;
+            _frame = LoadSprite("Art/Board/board_frame_ring")
+                ?? LoadSprite("Art/Board/board_frame")
+                ?? _fallback;
             _bg = LoadSprite("Art/Board/bg_night") ?? _fallback;
             _ice = LoadSprite("Art/Blockers/ice") ?? _fallback;
             _box = LoadSprite("Art/Blockers/box") ?? _fallback;
@@ -73,9 +78,18 @@ namespace LuminaMatch.UI
 
         static Sprite LoadSprite(string resourcesPath)
         {
+            // Prefer imported Sprite (keeps PNG alpha). Texture2D fallback can look opaque/white.
+            var sprite = Resources.Load<Sprite>(resourcesPath);
+            if (sprite != null) return sprite;
+
+            var sprites = Resources.LoadAll<Sprite>(resourcesPath);
+            if (sprites != null && sprites.Length > 0) return sprites[0];
+
             var tex = Resources.Load<Texture2D>(resourcesPath);
             if (tex == null) return null;
-            return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+            // Runtime sprites from PNG must treat alpha as transparency (avoids white boxes).
+            var s = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+            return s;
         }
 
         static Sprite WhiteSprite()

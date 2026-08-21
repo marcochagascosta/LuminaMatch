@@ -34,8 +34,8 @@ namespace LuminaMatch.Monetization
             if (UseProductionSdks)
             {
                 Iap = new UnityIapService();
-                Ads = new UnityAdsService();
-                Debug.Log("[LuminaMatch] MonetizationHub: production SDK path.");
+                Ads = new AdMobAdsService();
+                Debug.Log("[LuminaMatch] MonetizationHub: production SDK path (AdMob).");
             }
             else
             {

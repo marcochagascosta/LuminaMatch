@@ -60,6 +60,8 @@ namespace LuminaMatch.Match3
         public int Width = 8;
         public int Height = 8;
         public int Moves = 25;
+        /// <summary>Seconds to clear the level; 0 = derive from Moves.</summary>
+        public int TimeLimitSeconds;
         public int ColorCount = 5;
         public int Seed;
         public int IceChance;
@@ -67,5 +69,10 @@ namespace LuminaMatch.Match3
         public LevelObjective[] Objectives;
         public int CoinReward = 50;
         public string Title;
+
+        public int ResolvedTimeLimitSeconds
+            => TimeLimitSeconds > 0
+                ? TimeLimitSeconds
+                : System.Math.Max(90, Moves * 5);
     }
 }

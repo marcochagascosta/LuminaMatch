@@ -37,7 +37,7 @@ Product IDs (wire to Unity IAP / store consoles before release):
 | CoinsLarge (5000) | R$ 39,90 |
 | LivesRefill | R$ 6,90 |
 | BoosterPack | R$ 14,90 |
-| RemoveAds | R$ 19,90 |
+| RemoveAds | R$ 49,90 |
 
 ## Builds
 

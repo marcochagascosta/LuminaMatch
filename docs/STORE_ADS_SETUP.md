@@ -1,45 +1,37 @@
-# Store ads setup (Unity Ads)
+# Store ads setup (AdMob)
 
-Default ad network: **Unity Ads** (AdMob only if Unity blocks publication).
+IDs de runtime: `Assets/Resources/Monetization/AdsConfig.json`  
+Conta: `ca-app-pub-5377628561978409`
 
-## Game IDs (placeholders — replace from Unity Dashboard)
+| Campo | Valor |
+|-------|--------|
+| `androidAppId` | `ca-app-pub-5377628561978409~5051039283` |
+| `iosAppId` | `ca-app-pub-5377628561978409~6523119230` |
+| `rewardedAndroid` | `ca-app-pub-5377628561978409/5397739823` |
+| `rewardedIos` | `ca-app-pub-5377628561978409/3874417938` |
+| `interstitialAndroid` | `ca-app-pub-5377628561978409/1487198798` |
+| `interstitialIos` | `ca-app-pub-5377628561978409/1977369563` |
 
-| Platform | Game ID |
-|----------|---------|
-| iOS | `PLACEHOLDER_IOS_GAME_ID` |
-| Android | `PLACEHOLDER_ANDROID_GAME_ID` |
+Apps **Lumina Match** Android + iOS criados na AdMob (ainda sem loja vinculada / “Requer revisão”). A conta está em verificação (até 24h). Até a aprovação, a veiculação pode ficar limitada.
 
-## Placement IDs (placeholders)
+## Onde ver o dinheiro
 
-| Placement | iOS | Android |
-|-----------|-----|---------|
-| Rewarded (continue / +1 vida) | `PLACEHOLDER_IOS_REWARDED` | `PLACEHOLDER_ANDROID_REWARDED` |
-| Interstitial (pós-derrota / mapa) | `PLACEHOLDER_IOS_INTERSTITIAL` | `PLACEHOLDER_ANDROID_INTERSTITIAL` |
+Não é no Play Console. É no **AdMob**:
 
-## Runtime selection
+1. https://admob.google.com → **Pagamentos** (e o painel inicial com ganhos estimados).
+2. Relatórios por app/unidade em **Relatórios**.
+3. O pagamento sai pela conta **AdSense / pagamentos Google** ligada à AdMob (banco cadastrado lá).
 
-```csharp
-// MonetizationHub.UseProductionSdks = false → SandboxAdsService (Editor/dev default)
-// MonetizationHub.UseProductionSdks = true  → UnityAdsService stub (logs + simulates reward)
-```
+## Quando cai na conta
 
-Wire real SDK init in `UnityAdsService` when IDs above are filled.
+- Ganhos do mês são **estimados** no painel; fecham no começo do mês seguinte.
+- Se o saldo finalizado passar de **US$ 100** (ou equivalente) e não houver bloqueio, o Google emite o pagamento **por volta do dia 21** do mês seguinte.
+- Abaixo de US$ 100, o saldo **acumula** para o mês posterior.
+- Primeiro pagamento: precisa PIN pelo correio, dados fiscais e forma de pagamento. Pode atrasar semanas.
 
-## Policy caps (implemented in UnityAdsService stub)
+## Runtime
 
-- **Rewarded:** continue flow and optional +1 vida na loja.
-- **Interstitial:** máximo 1 a cada **180s**; nunca durante tutorial (`TutorialStep < 3`).
-- **Remove Ads:** `PlayerSaveData.RemoveAds` bloqueia interstitials.
-
-## Dashboard steps
-
-1. Unity Dashboard → Monetization → create project Lumina Match.
-2. Copy Game ID per platform into this doc and `UnityAdsService`.
-3. Create Rewarded + Interstitial placements; paste placement IDs.
-4. Enable test mode for internal builds; disable for production.
-5. Link app in App Store Connect / Play Console ad network declarations if required.
-
-## Testing
-
-- Editor / dev: `SandboxAdsService` grants rewarded instantly.
-- Device with `UseProductionSdks = true`: stub logs warning and invokes rewarded callback `true`.
+- Editor → `SandboxAdsService` (recompensa instantânea, sem vídeo).
+- Player → `AdMobAdsService`.
+- Interstitial: após derrota; 1 a cada 180s; nunca no tutorial (`TutorialStep < 3`); bloqueado se comprou Remover anúncios.
+- Rewarded: botão na derrota e na tela Sem vidas.

@@ -19,11 +19,11 @@ namespace LuminaMatch.UI.Screens
                 {
                     ObjectiveType.CollectColor => $"• Coletar {o.Amount} gemas {UiLabels.Gem(o.Color)}",
                     ObjectiveType.Score => $"• Alcançar {o.Amount} pontos",
-                    ObjectiveType.ClearBlockers => $"• Limpar {o.Amount} bloqueios",
+                    ObjectiveType.ClearBlockers => $"• Quebrar {o.Amount} caixas ou gelo",
                     _ => $"• Objetivo {o.Amount}"
                 });
             }
-            sb.Append($"Movimentos: {level.Moves}");
+            sb.Append($"Movimentos: {level.Moves}   ·   Tempo: {Match3Session.FormatTime(level.ResolvedTimeLimitSeconds)}");
             return sb.ToString();
         }
 

@@ -8,32 +8,35 @@ using UnityEngine.Advertisements;
 namespace LuminaMatch.Monetization
 {
     /// <summary>
-    /// Unity Ads rewarded + interstitial. IDs in docs/STORE_ADS_SETUP.md / AdsConfig.
+    /// Unity Ads rewarded + interstitial. IDs in docs/STORE_ADS_SETUP.md
+    /// Release builds with placeholder IDs do NOT grant free rewards.
     /// </summary>
     public class UnityAdsService : IAdsService
 #if UNITY_ADS
         , IUnityAdsInitializationListener, IUnityAdsLoadListener, IUnityAdsShowListener
 #endif
     {
-        public static string GameIdIos = "PLACEHOLDER_IOS_GAME_ID";
-        public static string GameIdAndroid = "PLACEHOLDER_ANDROID_GAME_ID";
-        public static string RewardedIos = "Rewarded_iOS";
-        public static string RewardedAndroid = "Rewarded_Android";
-        public static string InterstitialIos = "Interstitial_iOS";
-        public static string InterstitialAndroid = "Interstitial_Android";
+        public static string RewardedIos => AdsConfig.Current.rewardedIos;
+        public static string RewardedAndroid => AdsConfig.Current.rewardedAndroid;
+        public static string InterstitialIos => AdsConfig.Current.interstitialIos;
+        public static string InterstitialAndroid => AdsConfig.Current.interstitialAndroid;
 
         static float _lastInterstitialRealtime;
         Action<bool> _rewardedCallback;
         bool _rewardedReady;
+
+        static bool SimulateAds
+            => HasPlaceholderIds() && (Application.isEditor || Debug.isDebugBuild);
 
         public bool IsRewardedReady
         {
             get
             {
 #if UNITY_ADS
-                return _rewardedReady || HasPlaceholderIds();
+                if (SimulateAds) return true;
+                return _rewardedReady;
 #else
-                return true;
+                return SimulateAds;
 #endif
             }
         }
@@ -43,34 +46,47 @@ namespace LuminaMatch.Monetization
 #if UNITY_ADS
             if (HasPlaceholderIds())
             {
-                Debug.LogWarning("[LuminaMatch] Unity Ads Game IDs are placeholders — using simulated ads.");
+                Debug.LogWarning(SimulateAds
+                    ? "[LuminaMatch] Unity Ads placeholders — simulating ads (dev)."
+                    : "[LuminaMatch] Unity Ads placeholders — rewarded blocked in release until Game IDs are set.");
                 return;
             }
 
-            string gameId = Application.platform == RuntimePlatform.IPhonePlayer ? GameIdIos : GameIdAndroid;
+            string gameId = Application.platform == RuntimePlatform.IPhonePlayer
+                ? AdsConfig.Current.iosAppId
+                : AdsConfig.Current.androidAppId;
             Advertisement.Initialize(gameId, testMode: Debug.isDebugBuild, this);
 #else
-            Debug.LogWarning("[LuminaMatch] com.unity.ads not resolved — simulating ads.");
+            Debug.LogWarning("[LuminaMatch] com.unity.ads not resolved.");
 #endif
         }
 
-        static bool HasPlaceholderIds()
-            => GameIdIos.StartsWith("PLACEHOLDER") || GameIdAndroid.StartsWith("PLACEHOLDER");
+        static bool HasPlaceholderIds() => AdsConfig.HasPlaceholderIds();
 
         public void ShowRewarded(Action<bool> onCompleted)
         {
 #if UNITY_ADS
+            if (SimulateAds)
+            {
+                Debug.LogWarning("[LuminaMatch] Rewarded simulated (dev).");
+                onCompleted?.Invoke(true);
+                return;
+            }
+
             if (HasPlaceholderIds() || !_rewardedReady)
             {
-                Debug.LogWarning("[LuminaMatch] Rewarded not ready — simulating success.");
-                onCompleted?.Invoke(true);
+                Debug.LogWarning("[LuminaMatch] Rewarded not ready — no free grant in release.");
+                onCompleted?.Invoke(false);
                 return;
             }
 
             _rewardedCallback = onCompleted;
             Advertisement.Show(RewardedPlacement(), this);
 #else
-            onCompleted?.Invoke(true);
+            if (SimulateAds)
+                onCompleted?.Invoke(true);
+            else
+                onCompleted?.Invoke(false);
 #endif
         }
 
@@ -88,12 +104,12 @@ namespace LuminaMatch.Monetization
 #if UNITY_ADS
             if (HasPlaceholderIds())
             {
-                Debug.Log("[LuminaMatch] Interstitial simulated (placeholder Game IDs).");
+                Debug.Log("[LuminaMatch] Interstitial skipped (placeholder Game IDs).");
                 return;
             }
             Advertisement.Show(InterstitialPlacement(), this);
 #else
-            Debug.Log("[LuminaMatch] Interstitial simulated.");
+            Debug.Log("[LuminaMatch] Interstitial skipped (no ads package).");
 #endif
         }
 

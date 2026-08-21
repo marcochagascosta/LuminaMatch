@@ -1,8 +1,8 @@
 # Lumina Match — Store Status
 
-**Branch:** `feat/competitive-store` @ `2b49270`  
-**Updated:** 2026-07-21 (build 0.1.3 local)  
-**Marketing version:** `0.1.3` · Android versionCode `4` · iOS build `5` (ProjectSettings / BuildScripts)
+**Branch:** `sync/0.1.41-store-ready`  
+**Updated:** 2026-08-21 (GitHub sync)  
+**Marketing version:** `0.1.41` · Android versionCode `49` · iOS buildNumber `50`
 
 ## Builds (ready locally)
 
@@ -33,7 +33,7 @@ Estado: **READY_TO_SUBMIT** (submissão à review só junto com a versão do app
 | `...coins_large` | R$ 39,90 |
 | `...lives_refill` | R$ 6,90 |
 | `...booster_pack` | R$ 14,90 |
-| `...remove_ads` | R$ 19,90 |
+| `...remove_ads` | R$ 49,90 |
 | `...starter_pack` | R$ 9,90 |
 
 ## Play Console — Internal Testing (PUBLICADO 2026-07-18 ~23:47 — ainda 0.1.2)
@@ -51,13 +51,15 @@ Estado: **READY_TO_SUBMIT** (submissão à review só junto com a versão do app
 
 ## Play IAP
 
-- **Não criados** — página bloqueada: *“É preciso configurar uma conta do comerciante do Google Payments”*.
-- SKUs alvo = `docs/STORE_IAP_SKUS.md` (mesmos IDs da Apple).
-- Próximo clique óbvio: **Configure uma conta de comerciante** em Monetização (requer conta Google Payments do Marco; não automatizável sem dados bancários/ID).
+- **Criados 2026-08-15** (7 produtos únicos, opções de compra ativas).
+- IDs ok: `coins_medium`, `coins_large`, `lives_refill`, `booster_pack`, `remove_ads`, `starter_pack`.
+- **Alias Android:** `com.marcosaas.luminamatch.coins_small1` (Play criou com o `1`; o app mapeia só no Android).
+- `remove_ads` no Brasil: **BRL 49,99** (tier Play; Apple R$ 49,90).
 
-## Unity Ads
+## AdMob
 
-- **Pendente.** Sessão Unity Dashboard não autenticada.
+- Código no player: `AdMobAdsService`. IDs atuais = **sample do Google** (anúncio de teste, R$ 0).
+- Colar App ID + unidades rewarded/interstitial reais em `Assets/Resources/Monetization/AdsConfig.json` para ganhar.
 
 ## Não enviar iOS deste Mac
 
@@ -67,8 +69,8 @@ macOS 27.0 beta → **ITMS-90111**. Archive App Store só em macOS estável.
 
 1. ~~Internal Testing 0.1.2~~ **FEITO** (code 3).
 2. **Upload Internal Testing 0.1.3** (code 4) — AAB no Desktop **ou** sideload APK via USB.
-3. Configurar conta merchant Google Payments → criar 7 Play IAPs.
-4. Unity Ads Game IDs.
+3. ~~Criar 7 Play IAPs~~ **FEITO** (Android mapeia `coins_small1`).
+4. AdMob App IDs / unit IDs reais (hoje sample = R$ 0).
 5. iOS em Mac estável.
 
 ## Privacy
@@ -77,4 +79,4 @@ macOS 27.0 beta → **ITMS-90111**. Archive App Store só em macOS estável.
 
 ## Git note
 
-Não commitar: `Assets/Scenes/Boot.unity`, `Assets/MobileDependencyResolver/**`, `ProjectSettings/GvhProjectSettings.xml` (ruído/resolver; sem segredos, mas fora do escopo store docs).
+Sincronizado em 2026-08-21. Fora do repo: `tmp_*.png`, `Builds/`, keystores, `Library/`.

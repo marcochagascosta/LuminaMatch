@@ -5,12 +5,15 @@ namespace LuminaMatch.Meta
 {
     public static class PalaceStageVisual
     {
-        /// <summary>Maps 0..20 pieces to 0..2 keyframe art.</summary>
+        /// <summary>
+        /// Maps 0..20 pieces onto 3 keyframe arts with clearer mid-progress bands.
+        /// 0 ruins · 1–6 awakens · 7–13 rising · 14–20 uses stage_2 (resplendent).
+        /// </summary>
         public static int KeyframeIndex(int piecesUnlocked)
         {
             int p = Mathf.Clamp(piecesUnlocked, 0, CastleProgress.TotalPieces);
             if (p <= 0) return 0;
-            if (p < 10) return 1;
+            if (p <= 6) return 1;
             return 2;
         }
 
@@ -27,12 +30,10 @@ namespace LuminaMatch.Meta
         public static string StageCaption(PlayerProgress progress)
         {
             int pieces = CastleProgress.UnlockedPieces(progress);
-            return KeyframeIndex(pieces) switch
-            {
-                0 => "Ruínas do Palácio de Luz",
-                1 => "O palácio desperta",
-                _ => "Palácio resplandecente"
-            };
+            if (pieces <= 0) return "Ruínas do Palácio de Luz";
+            if (pieces <= 6) return "O palácio desperta";
+            if (pieces <= 13) return "Torres de luz se erguem";
+            return "Palácio resplandecente";
         }
     }
 }
