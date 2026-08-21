@@ -35,11 +35,10 @@ Conta AdMob ainda em verificação (até 24h) e apps “Requer revisão” até 
 
 ### 4. Upload Internal Testing
 
-AAB **0.1.40** / versionCode **48** já estava no track interno.
-Próximo AAB: **0.1.41** / versionCode **49** — obrigatório para o Play aceitar atualizações após 30/08/2026 (Google Play Billing Library **8.3.0** via `com.unity.purchasing` 4.15.1; a 4.13.0 embarcava 7.1.1).
+**Feito 2026-08-21** — **0.1.41 / versionCode 49** publicado via API do Play nas faixas `internal` e `alpha` (as duas ativas). Fluxo documentado em `STORE_STATUS.md`.
 
 ### 5. Play Billing Library (aviso da Play Console)
 
 - Exigência: Billing Library **8.0.0+** até 30/08/2026.
 - Correção no código: `Packages/manifest.json` → `com.unity.purchasing` **4.15.1** (Billing **8.3.0**). API 4.x (`IDetailedStoreListener`) permanece; não precisa migrar para IAP 5.
-- Depois do AAB 0.1.41 publicado nas faixas ativas, a Play Console confirma se o aviso sumiu.
+- O artefato 49 declara `com.google.android.play.billingclient.version = 8.3.0`. A Play reavalia por conta própria — conferir se o aviso saiu.

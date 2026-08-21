@@ -36,11 +36,22 @@ Estado: **READY_TO_SUBMIT** (submissão à review só junto com a versão do app
 | `...remove_ads` | R$ 49,90 |
 | `...starter_pack` | R$ 9,90 |
 
-## Play Console — Internal Testing (PUBLICADO 2026-07-18 ~23:47 — ainda 0.1.2)
+## Play Console — publicado 2026-08-21
 
 - App ID: `4972110585725182702` · Developer: `6604076546202815303`
-- **Status (último publicado):** Disponível para testadores internos — **0.1.2 / code 3**
-- Próximo: publicar **0.1.3 / code 4** via AAB acima
+- **Faixas ativas em 0.1.41 / versionCode 49** (`status: completed`):
+  - `internal` (teste interno)
+  - `alpha` (teste fechado)
+- `production` e `beta` seguem vazias — subir só quando o lançamento aberto for decidido.
+- Billing Library do artefato: **8.3.0** (`com.google.android.play.billingclient.version` no manifest).
+
+### Publicar via API (sem clicar na Console)
+
+Credencial: ADC do gcloud (`marko.formiga@gmail.com`) já com o escopo `androidpublisher`.
+Projeto de cota: **`lumina-match-play47`** (API `androidpublisher.googleapis.com` habilitada em 2026-08-21).
+
+Fluxo: `edits.insert` → upload do `.aab` em `/upload/.../bundles?uploadType=media` → `PUT tracks/{internal,alpha}` → `edits:validate` → `edits:commit`.
+Cuidado no zsh: `"$VAR:commit"` vira `${VAR:c}`; usar `"${VAR}"':commit'`.
 
 ### Links
 
@@ -67,11 +78,11 @@ macOS 27.0 beta → **ITMS-90111**. Archive App Store só em macOS estável.
 
 ## Ainda pendente (ação humana)
 
-1. ~~Internal Testing 0.1.2~~ **FEITO** (code 3).
-2. **Upload Internal Testing 0.1.3** (code 4) — AAB no Desktop **ou** sideload APK via USB.
-3. ~~Criar 7 Play IAPs~~ **FEITO** (Android mapeia `coins_small1`).
-4. AdMob App IDs / unit IDs reais (hoje sample = R$ 0).
-5. iOS em Mac estável.
+1. ~~Publicar nas faixas ativas~~ **FEITO 2026-08-21** (0.1.41 / 49 em `internal` + `alpha`).
+2. ~~Criar 7 Play IAPs~~ **FEITO** (Android mapeia `coins_small1`).
+3. Conferir na Play Console se o aviso da Biblioteca de Faturamento saiu (Google reavalia após a publicação).
+4. Conta de comerciante Google Payments — sem ela o IAP real não cobra (`BILLING_CHECKLIST.md`).
+5. iOS em Mac estável (macOS 27 beta dá ITMS-90111).
 
 ## Privacy
 
