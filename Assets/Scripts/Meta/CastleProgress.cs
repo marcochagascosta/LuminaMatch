@@ -21,6 +21,26 @@ namespace LuminaMatch.Meta
                 : $"Palácio de Luz: {pieces}/{TotalPieces} peças";
         }
 
+        /// <summary>Wins still needed before the next castle piece unlocks.</summary>
+        public static int WinsUntilNextPiece(PlayerProgress progress)
+        {
+            if (progress?.Data == null || UnlockedPieces(progress) >= TotalPieces)
+                return 0;
+            int mod = progress.Data.LevelsWon % PlayerProgress.LevelsPerCastlePiece;
+            return mod == 0
+                ? PlayerProgress.LevelsPerCastlePiece
+                : PlayerProgress.LevelsPerCastlePiece - mod;
+        }
+
+        public static string NextPieceHint(PlayerProgress progress)
+        {
+            int pieces = UnlockedPieces(progress);
+            if (pieces >= TotalPieces)
+                return "Palácio completo!";
+            int need = WinsUntilNextPiece(progress);
+            return $"Próxima: {PieceName(pieces)} · faltam {need} vitória{(need == 1 ? "" : "s")}";
+        }
+
         public static string PieceName(int index)
         {
             string[] names =

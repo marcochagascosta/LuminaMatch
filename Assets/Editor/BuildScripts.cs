@@ -11,6 +11,8 @@ namespace LuminaMatch.Editor
         [MenuItem("Lumina Match/Build Android APK (Debug)")]
         public static void BuildAndroidApk()
         {
+            // WARNING: Development builds enable IAP local fallback (free grants).
+            // Never upload this APK to Play Console — use AAB/APK Release only.
             ProjectSetup.SetupScenes();
             ConfigureAndroidCommon();
 
@@ -30,7 +32,37 @@ namespace LuminaMatch.Editor
             };
 
             var report = BuildPipeline.BuildPlayer(options);
-            Debug.Log($"[Lumina Match] Android APK: {report.summary.result} -> {path}");
+            Debug.Log($"[Lumina Match] Android APK (DEBUG — do not upload to stores): {report.summary.result} -> {path}");
+            if (Application.isBatchMode)
+                EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
+        }
+
+        [MenuItem("Lumina Match/Build Android APK (Release)")]
+        public static void BuildAndroidApkRelease()
+        {
+            ProjectSetup.SetupScenes();
+            ConfigureAndroidCommon();
+            ApplyAndroidReleaseSigning();
+            ApplyAppIconIfPresent();
+
+            string dir = Path.Combine(Directory.GetParent(Application.dataPath)!.FullName, "Builds", "Android");
+            Directory.CreateDirectory(dir);
+            string path = Path.Combine(dir, "LuminaMatch-release.apk");
+
+            EditorUserBuildSettings.buildAppBundle = false;
+            EditorUserBuildSettings.androidBuildSystem = AndroidBuildSystem.Gradle;
+
+            var options = new BuildPlayerOptions
+            {
+                scenes = new[] { "Assets/Scenes/Boot.unity" },
+                locationPathName = path,
+                target = BuildTarget.Android,
+                options = BuildOptions.None
+            };
+
+            var report = BuildPipeline.BuildPlayer(options);
+            Debug.Log($"[Lumina Match] Android APK (Release): {report.summary.result} -> {path}");
+            EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
         }
 
         [MenuItem("Lumina Match/Build Android AAB (Release)")]
@@ -58,17 +90,17 @@ namespace LuminaMatch.Editor
 
             var report = BuildPipeline.BuildPlayer(options);
             Debug.Log($"[Lumina Match] Android AAB: {report.summary.result} -> {path}");
-            if (report.summary.result != BuildResult.Succeeded)
-                EditorApplication.Exit(1);
+            EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
         }
 
         static void ConfigureAndroidCommon()
         {
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.marcosaas.luminamatch");
-            PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel24;
+            // Keep minSdk aligned with ProjectSettings (API 26+) for Play production.
+            PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
-            PlayerSettings.bundleVersion = "0.1.1";
-            PlayerSettings.Android.bundleVersionCode = 2;
+            PlayerSettings.bundleVersion = "0.1.42";
+            PlayerSettings.Android.bundleVersionCode = 49;
 
             try
             {
@@ -105,9 +137,16 @@ namespace LuminaMatch.Editor
             {
                 keystore = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                     ".lumina-match-secrets", "lumina-upload.keystore");
+            }
+
+            if (string.IsNullOrEmpty(alias))
                 alias = "lumina_upload";
-                storePass = "LuminaMatch2026Upload!";
-                keyPass = "LuminaMatch2026Upload!";
+
+            if (string.IsNullOrEmpty(storePass) || string.IsNullOrEmpty(keyPass))
+            {
+                throw new InvalidOperationException(
+                    "Release signing requires LUMINA_STOREPASS and LUMINA_KEYPASS " +
+                    "(optional LUMINA_KEYSTORE / LUMINA_KEYALIAS). Passwords are not stored in the repo.");
             }
 
             if (!File.Exists(keystore))
@@ -163,10 +202,11 @@ namespace LuminaMatch.Editor
             ApplyAppIconIfPresent();
             PlayerSettings.iOS.sdkVersion = sdk;
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, "com.marcosaas.luminamatch");
-            PlayerSettings.bundleVersion = "0.1.1";
-            PlayerSettings.iOS.buildNumber = "2";
+            PlayerSettings.bundleVersion = "0.1.42";
+            PlayerSettings.iOS.buildNumber = "51";
             PlayerSettings.iOS.appleEnableAutomaticSigning = true;
-            // Encryption compliance for apps without custom crypto
+            PlayerSettings.iOS.appleDeveloperTeamID = "6LQQD54JHB";
+            // Encryption compliance: standard HTTPS only (ITSAppUsesNonExemptEncryption=false via plist post-process).
             PlayerSettings.iOS.allowHTTPDownload = false;
 
             if (sdk == iOSSdkVersion.SimulatorSDK)
@@ -190,8 +230,7 @@ namespace LuminaMatch.Editor
             var report = BuildPipeline.BuildPlayer(options);
             Debug.Log($"[Lumina Match] iOS build ({sdk}): {report.summary.result} -> {dir}");
             PlayerSettings.iOS.sdkVersion = iOSSdkVersion.DeviceSDK;
-            if (report.summary.result != BuildResult.Succeeded)
-                EditorApplication.Exit(1);
+            EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
         }
 
         static void ForceIosSimulatorArm64()

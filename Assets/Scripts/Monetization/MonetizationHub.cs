@@ -6,6 +6,17 @@ namespace LuminaMatch.Monetization
     {
         public static MonetizationHub Instance { get; private set; }
 
+        /// <summary>
+        /// Editor/dev defaults to sandbox. Player builds use production SDK paths
+        /// (with local fallback until store IDs / dashboard are configured).
+        /// </summary>
+        public static bool UseProductionSdks =
+#if UNITY_EDITOR
+            false;
+#else
+            true;
+#endif
+
         public IIapService Iap { get; private set; }
         public IAdsService Ads { get; private set; }
 
@@ -19,8 +30,19 @@ namespace LuminaMatch.Monetization
 
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            Iap = new SandboxIapService();
-            Ads = new SandboxAdsService();
+
+            if (UseProductionSdks)
+            {
+                Iap = new UnityIapService();
+                Ads = new AdMobAdsService();
+                Debug.Log("[LuminaMatch] MonetizationHub: production SDK path (AdMob).");
+            }
+            else
+            {
+                Iap = new SandboxIapService();
+                Ads = new SandboxAdsService();
+                Debug.Log("[LuminaMatch] MonetizationHub: sandbox.");
+            }
         }
     }
 }

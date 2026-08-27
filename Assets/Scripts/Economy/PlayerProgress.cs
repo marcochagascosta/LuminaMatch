@@ -17,13 +17,22 @@ namespace LuminaMatch.Economy
         public int LineBlasts = 2;
         public bool RemoveAds;
         public int LevelsWon;
+        public int TutorialStep;
+        public bool StarterPackBought;
+        public string DailyOfferDayKey;
+        public bool StarterPackSeen;
+        /// <summary>Once true, Music/Sfx/Vibrate flags are trusted (migration for old saves).</summary>
+        public bool SettingsInitialized;
+        public bool MusicOn = true;
+        public bool SfxOn = true;
+        public bool VibrateOn = true;
     }
 
     public class PlayerProgress
     {
         const string Key = "LuminaMatch.Save.v1";
-        public const int LifeRegenSeconds = 20 * 60;
-        public const int ContinueCost = 900;
+        public const int LifeRegenSeconds = 30 * 60;
+        public const int ContinueCost = 750;
         public const int LevelsPerCastlePiece = 3;
 
         public PlayerSaveData Data { get; private set; }
@@ -56,6 +65,57 @@ namespace LuminaMatch.Economy
                 Data = new PlayerSaveData();
                 Save();
             }
+
+            EnsureSettingsDefaults();
+        }
+
+        void EnsureSettingsDefaults()
+        {
+            // v26: force music back on — soft pad in 0.1.25 + toggles left some saves silent.
+            const string RepairKey = "LuminaMatch.SettingsRepair.v26";
+            if (!PlayerPrefs.HasKey(RepairKey))
+            {
+                Data.MusicOn = true;
+                if (!Data.SettingsInitialized)
+                {
+                    Data.SfxOn = true;
+                    Data.VibrateOn = true;
+                }
+                Data.SettingsInitialized = true;
+                Save();
+                PlayerPrefs.SetInt(RepairKey, 1);
+                PlayerPrefs.Save();
+                return;
+            }
+
+            if (Data.SettingsInitialized) return;
+            Data.MusicOn = true;
+            Data.SfxOn = true;
+            Data.VibrateOn = true;
+            Data.SettingsInitialized = true;
+            Save();
+        }
+
+        public void SetMusicOn(bool on)
+        {
+            Data.MusicOn = on;
+            Data.SettingsInitialized = true;
+            Save();
+            Audio.MusicPlayer.Instance?.ApplyFromSave();
+        }
+
+        public void SetSfxOn(bool on)
+        {
+            Data.SfxOn = on;
+            Data.SettingsInitialized = true;
+            Save();
+        }
+
+        public void SetVibrateOn(bool on)
+        {
+            Data.VibrateOn = on;
+            Data.SettingsInitialized = true;
+            Save();
         }
 
         public void Save()
@@ -68,7 +128,11 @@ namespace LuminaMatch.Economy
         {
             if (Data.Lives >= Data.MaxLives)
             {
-                Data.NextLifeUtcTicks = 0;
+                if (Data.NextLifeUtcTicks != 0)
+                {
+                    Data.NextLifeUtcTicks = 0;
+                    Save();
+                }
                 return;
             }
 
@@ -80,14 +144,20 @@ namespace LuminaMatch.Economy
             }
 
             var next = new DateTime(Data.NextLifeUtcTicks, DateTimeKind.Utc);
+            bool gained = false;
             while (Data.Lives < Data.MaxLives && DateTime.UtcNow >= next)
             {
                 Data.Lives++;
                 next = next.AddSeconds(LifeRegenSeconds);
+                gained = true;
             }
 
-            Data.NextLifeUtcTicks = Data.Lives >= Data.MaxLives ? 0 : next.Ticks;
-            Save();
+            long newTicks = Data.Lives >= Data.MaxLives ? 0 : next.Ticks;
+            if (gained || Data.NextLifeUtcTicks != newTicks)
+            {
+                Data.NextLifeUtcTicks = newTicks;
+                Save();
+            }
         }
 
         public int SecondsToNextLife()
@@ -96,6 +166,12 @@ namespace LuminaMatch.Economy
             if (Data.Lives >= Data.MaxLives || Data.NextLifeUtcTicks <= 0) return 0;
             var next = new DateTime(Data.NextLifeUtcTicks, DateTimeKind.Utc);
             return Math.Max(0, (int)(next - DateTime.UtcNow).TotalSeconds);
+        }
+
+        public bool HasLife()
+        {
+            TickLives();
+            return Data.Lives > 0;
         }
 
         public bool TrySpendLife()

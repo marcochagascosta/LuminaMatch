@@ -1,63 +1,33 @@
-# Store submission — status 2026-07-16 (atualizado)
+# Lumina Match — Store Status
 
-## Pronto neste Mac
+**Branch:** `cursor/store-production-ready-d4b7`  
+**Updated:** 2026-08-27  
+**Marketing:** `0.1.42` · Android versionCode **49** (promote AAB já publicado) · iOS build **51** (fix iPad + CI)
 
-| Artefato | Caminho |
-|----------|---------|
-| Android AAB (release) | Desktop `LuminaMatch-release.aab` (~18 MB) |
-| Android APK (debug) | Desktop `LuminaMatch-debug.apk` |
-| iOS IPA (App Store) | Desktop `LuminaMatch.ipa` |
-| Ícone 1024 | Desktop `LuminaMatch-icon-1024.png` |
-| Screenshots marketing | Desktop `LuminaMatch-screenshots/` |
-| Privacy policy | `docs/PRIVACY_POLICY.md` |
-| Copy da loja | `docs/STORE_LISTING.md` |
-| Keystore Android | `~/.lumina-match-secrets/` (fora do git) |
+## Faturar agora (sem Macbook beta)
 
-- Bundle ID: `com.marcosaas.luminamatch`
-- Versão Unity/Android: `0.1.1` (versionCode `2`)
-- App Store Connect version: `1.0` (estado PREPARE_FOR_SUBMISSION)
-- Apple app id: `6791448071`
-- Team Apple: `6LQQD54JHB`
-- Privacy URL: https://raw.githubusercontent.com/marcochagascosta/LuminaMatch/main/docs/PRIVACY_POLICY.md
+Ver **`docs/LAUNCH_NOW.md`**.
 
-## iOS — feito
+| Canal | Ação | Status |
+|-------|------|--------|
+| Play Production | Workflow `Promote Play Production` ou `tools/play_promote_production.py --yes` | Aguardando secret `GOOGLE_APPLICATION_CREDENTIALS_JSON` |
+| iOS TestFlight | Workflow `iOS TestFlight (macOS CI)` em runner macOS-14 | Aguardando UNITY_* + ASC_* |
+| Merchant Play | Console monetization-setup | Confirmar (bloqueia cobrança IAP) |
 
-- [x] App criado no App Store Connect
-- [x] IPA enviada (Transporter) — build **2** VALID
-- [x] TestFlight interno — **confirmado no iPhone do Marco**
-- [x] Build anexada à versão 1.0
-- [x] Nome, subtítulo, descrição pt-BR, keywords, support URL
-- [x] Privacy Policy URL
-- [x] Copyright `2026 Marco Costa`
-- [x] Screenshots 6.7" e 6.5" (3 cada) enviados via API
+## Já feito
 
-## iOS — falta para enviar à Review
+- Código competitive + IAP/AdMob + fix UI iPad (scale 0.9)
+- AAB **0.1.41 / 49** em Play `internal` + `alpha`
+- 7 IAPs ASC + 7 IAPs Play
+- Workflows CI em `.github/workflows/`
+- Listing / privacy / feature graphic no repo
 
-1. Classificação etária (questionário Age Rating) no ASC — API pediu campos extras; complete no browser se ainda vermelho
-2. Categoria Games → Puzzle (tente no UI se API falhar)
-3. Contact phone do App Review (formato `+55 …`)
-4. Ícone da loja se ainda não estiver no asset catalog / ASC
-5. Quando checklist verde: **Add for Review** → **Submit**
+## Macbook beta
 
-Link: https://appstoreconnect.apple.com/apps/6791448071/appstore
+Não usar para upload iOS (ITMS-90111). Usar o workflow macOS CI.
 
-## Google Play — próximo (manual no browser)
+## Links
 
-Não há service account Play neste Mac; upload é no Console.
-
-1. Abra [Play Console](https://play.google.com/console) (já aberto se o `open` rodou)
-2. **Create app** → nome `Lumina Match` → Free → declare políticas
-3. **Dashboard** complete os itens obrigatórios (Privacy policy URL acima)
-4. **App content** → Data safety: só progresso local / IAP via Google Play; sem coleta de PII
-5. **Testing → Internal testing → Create new release**
-6. Upload: `Desktop/LuminaMatch-release.aab` (caminho também na área de transferência)
-7. Adicione-se como tester → instale pelo link Internal
-8. Depois do OK: promover para Closed/Production
-
-Package: `com.marcosaas.luminamatch`
-
-## Monetização (ainda sandbox)
-
-IAP/Ads no código são sandbox. Antes de produção real com cobrança:
-- Unity IAP + produtos reais nas lojas
-- AdMob / Unity Ads com IDs de produção
+- Play Production: https://play.google.com/console/u/0/developers/6604076546202815303/app/4972110585725182702/tracks/production
+- ASC: https://appstoreconnect.apple.com/apps/6791448071/appstore
+- PR: https://github.com/marcochagascosta/LuminaMatch/pull/4

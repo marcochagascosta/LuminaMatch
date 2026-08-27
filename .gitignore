@@ -58,3 +58,7 @@ Builds/iOS/
 # local secrets path marker
 *.keystore
 *.jks
+.venv-art/
+
+# local screenshot leftovers (device QA captures)
+/tmp_*.png

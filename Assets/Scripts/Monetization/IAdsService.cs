@@ -12,7 +12,7 @@ namespace LuminaMatch.Monetization
 
     /// <summary>
     /// Sandbox ads: instantly grants reward in Editor / without SDK keys.
-    /// Replace body with Unity Ads / AdMob when store IDs are configured.
+    /// Player builds use AdMobAdsService.
     /// </summary>
     public class SandboxAdsService : IAdsService
     {

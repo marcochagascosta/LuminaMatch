@@ -18,14 +18,24 @@ namespace LuminaMatch.Match3
         Box = 2
     }
 
+    public enum BoardPowerType
+    {
+        None = 0,
+        Rocket = 1,
+        Bomb = 2,
+        ColorDisk = 3
+    }
+
     public struct Cell
     {
         public GemColor Color;
         public BlockerType Blocker;
         public bool IsHole;
+        public BoardPowerType Power;
 
         public bool HasGem => !IsHole && Color != GemColor.None && Blocker != BlockerType.Box;
         public bool CanSwap => !IsHole && Blocker == BlockerType.None && Color != GemColor.None;
+        public bool HasPower => Power != BoardPowerType.None;
     }
 
     public enum ObjectiveType
@@ -50,6 +60,8 @@ namespace LuminaMatch.Match3
         public int Width = 8;
         public int Height = 8;
         public int Moves = 25;
+        /// <summary>Seconds to clear the level; 0 = derive from Moves.</summary>
+        public int TimeLimitSeconds;
         public int ColorCount = 5;
         public int Seed;
         public int IceChance;
@@ -57,5 +69,10 @@ namespace LuminaMatch.Match3
         public LevelObjective[] Objectives;
         public int CoinReward = 50;
         public string Title;
+
+        public int ResolvedTimeLimitSeconds
+            => TimeLimitSeconds > 0
+                ? TimeLimitSeconds
+                : System.Math.Max(90, Moves * 5);
     }
 }

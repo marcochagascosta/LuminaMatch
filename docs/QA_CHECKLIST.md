@@ -1,26 +1,37 @@
-# QA checklist — pronto para teste
+# QA checklist — pronto para teste (0.1.41)
+
+## Device (Galaxy / Play Internal / sideload release)
+
+- [ ] Home: Jogar; vidas/moedas; palácio
+- [ ] HUD: countdown `+1 em MM:SS` no chip de vidas
+- [ ] Níveis 1–3: tutorial
+- [ ] Níveis 4–7: hints foguete / bomba / disco / combo
+- [ ] Trocar dois poderes → combo
+- [ ] Nível 8+: gelo; 17+: caixas
+- [ ] Sem movimentos → Continuar (moedas/vídeo) / Tentar de novo
+- [ ] Tempo esgotado → Result; Continuar +5 moves
+- [ ] Vitória → reveal do palácio
+- [ ] Config: Sons / Música / Vibração (ícones)
+- [ ] Sem vidas → regen + vídeo/loja
+- [ ] Loja: preços da loja (não sandbox) em build **Release**
+- [ ] Restore compras
+- [ ] 10 níveis seguidos sem crash
 
 ## Editor
 
-- [ ] Project opens without compile errors
-- [ ] Play mode shows Home with Lumina Match branding
-- [ ] Level select lists 60 levels; only unlocked are playable
-- [ ] Start level spends 1 life
-- [ ] Swap adjacent gems that form a match clears and cascades
-- [ ] Invalid swap is rejected (no move spent)
-- [ ] Complete objectives → vitória → coins + castle progress
-- [ ] Run out of moves → result with continue (coins / video)
-- [ ] Shop sandbox purchases increase coins/lives/boosters
-- [ ] Out of lives → rewarded ad grants +1 life
-- [ ] Edit Mode tests: all green
+- [ ] Edit Mode tests verdes
+- [ ] Project abre sem erros de compile
 
-## Android debug
+## Builds
 
-- [ ] APK installs on device
-- [ ] Portrait UI usable with fingers
-- [ ] No crash on 10 consecutive levels
+- AAB release: `Builds/Android/LuminaMatch-release.aab` · **0.1.41 / 49**
+- APK release: sideload OK; **não** enviar Debug APK às lojas
+- iOS: `Builds/iOS/` → Archive build **50** em macOS estável
 
-## iOS (TestFlight later)
+## Store gate
 
-- [ ] Xcode archive succeeds with your team
-- [ ] Touch + safe area OK
+- [ ] Play Internal/Closed OK no device
+- [ ] Play Production promote (após merchant + QA)
+- [ ] TestFlight / ASC Review com build 50
+- [ ] AdMob fills (ou graceful fail sem grant grátis)
+- [ ] IAP sandbox Apple / license testers Play
