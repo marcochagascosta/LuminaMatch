@@ -194,7 +194,7 @@ namespace LuminaMatch.Monetization
                 return;
             }
 #endif
-            onResult?.Invoke(any || true);
+            onResult?.Invoke(any);
 #else
             onResult?.Invoke(AllowLocalFallback);
 #endif

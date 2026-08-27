@@ -6,12 +6,14 @@ namespace LuminaMatch.Monetization
     [System.Serializable]
     public class AdsConfigData
     {
-        public string androidAppId = "ca-app-pub-3940256099942544~3347511713";
-        public string iosAppId = "ca-app-pub-3940256099942544~1458002511";
-        public string rewardedAndroid = "ca-app-pub-3940256099942544/5224354917";
-        public string rewardedIos = "ca-app-pub-3940256099942544/1712485313";
-        public string interstitialAndroid = "ca-app-pub-3940256099942544/1033173712";
-        public string interstitialIos = "ca-app-pub-3940256099942544/4411468910";
+        // Empty defaults: missing JSON must not silently ship Google sample ads.
+        // Production IDs live in Resources/Monetization/AdsConfig.json.
+        public string androidAppId = "";
+        public string iosAppId = "";
+        public string rewardedAndroid = "";
+        public string rewardedIos = "";
+        public string interstitialAndroid = "";
+        public string interstitialIos = "";
     }
 
     public static class AdsConfig

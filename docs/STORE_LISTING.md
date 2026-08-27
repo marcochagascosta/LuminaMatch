@@ -1,17 +1,61 @@
-# Lumina Match — Store listing (copy)
+# Lumina Match — Store listing (copy pronto para colar)
 
-## Name
-Lumina Match
+## Identidade
 
-## Subtitle (Apple, ≤30 chars)
-Restore the Palace of Light
+| Campo | Valor |
+|-------|-------|
+| Nome | Lumina Match |
+| Bundle / package | `com.marcosaas.luminamatch` |
+| Versão desta submissão | `0.1.41` · Android versionCode `49` · iOS build `50` |
+| Categoria | Games → Puzzle / Quebra-cabeça |
+| Preço | Grátis (IAP opcional) |
 
-## Short description (Play, ≤80 chars)
-Match gems, restore the Palace of Light. Casual puzzle with boosters!
+## App Store Connect (pt-BR)
 
-## Full description
+**Subtítulo (≤30):** Restaure o Palácio de Luz
 
-Restore the **Palace of Light** by matching glowing gems.
+**Descrição:**
+
+Restaure o Palácio de Luz combinando gemas brilhantes.
+
+Lumina Match é um match-3 casual rápido:
+• 60 fases com desafio crescente
+• Colete gemas, derreta gelo e quebre caixas
+• Boosters: martelo, troca e explosão em linha
+• Vidas que regeneram com o tempo
+• Monte o palácio peça por peça
+
+Jogue alguns minutos ou uma sessão longa — sempre mais uma fase.
+
+Grátis para jogar. Compras no app opcionais (moedas, vidas e boosters).
+
+**Keywords:** match3,puzzle,gemas,casual,castelo,match,boosters,fases,palacio,cristal
+
+**Copyright:** 2026 Marco Costa
+
+**Support URL:** https://github.com/marcochagascosta/LuminaMatch/issues
+
+**Privacy Policy URL:** https://raw.githubusercontent.com/marcochagascosta/LuminaMatch/main/docs/PRIVACY_POLICY.md
+
+## Google Play (pt-BR)
+
+**Descrição curta (≤80):** Combine gemas e restaure o Palácio de Luz. Puzzle casual com boosters!
+
+**Descrição completa:** (mesma do bloco ASC acima)
+
+**E-mail de contato:** marcochagascosta@gmail.com
+
+**Política de privacidade:** mesma URL acima
+
+## English (optional secondary locale)
+
+**Subtitle:** Restore the Palace of Light
+
+**Short (Play ≤80):** Match gems, restore the Palace of Light. Casual puzzle with boosters!
+
+**Full description:**
+
+Restore the Palace of Light by matching glowing gems.
 
 Lumina Match is a fast casual match-3:
 • 60 levels with rising challenge
@@ -24,26 +68,17 @@ Play a few minutes or a long session — always one more level.
 
 Free to play. Optional in-app purchases for coins, lives and boosters.
 
-## Keywords (Apple)
-match3,puzzle,gems,casual,castle,match,boosters,levels,palace,crystal
-
-## Category
-Games → Puzzle
-
 ## Age / content
-- Apple: 4+ (Infrequent/Mild Cartoon or Fantasy Violence: None; In-App Purchases)
-- Play: Everyone / PEGI 3 equivalent (check questionnaire); declare IAP
 
-## Support URL
-(placeholder until you set one) https://github.com/marcochagascosta/LuminaMatch
+- Apple: 4+ (In-App Purchases)
+- Play: Everyone / Livre — declare IAP + ads
+- Export compliance (Apple): **No** (HTTPS only; `ITSAppUsesNonExemptEncryption=false`)
 
-## Privacy Policy URL
-Host docs/PRIVACY_POLICY.md (GitHub raw/Pages) or paste the same text on your site.
-Suggested raw URL after push:
-https://raw.githubusercontent.com/marcochagascosta/LuminaMatch/main/docs/PRIVACY_POLICY.md
+## Assets no repo
 
-## Bundle ID
-com.marcosaas.luminamatch
-
-## Version for this submission
-0.1.1 (Android versionCode 2)
+| Asset | Path |
+|-------|------|
+| Ícone 1024×1024 | `docs/store/icon-1024.png` (= `Assets/Art/Icons/…`) |
+| Feature graphic Play 1024×500 | `docs/store/feature-graphic-1024x500.png` |
+| Ícones IAP (review) | `docs/store/iap-icons/` |
+| Screenshots telefone | Ainda no Desktop do Mac — copiar para ASC/Play; ver `docs/STORE_ASSETS.md` |

@@ -44,6 +44,11 @@ namespace LuminaMatch.Editor
                 plist.root.SetString("GADApplicationIdentifier", appId);
             }
 
+            // Standard HTTPS only — answer "No" to export compliance in ASC.
+            plist.root.SetBoolean("ITSAppUsesNonExemptEncryption", false);
+
+            // AdMob may use the advertising ID; keep the ATT string for App Store privacy.
+            // Runtime ATT prompt is optional until UMP/ATT flow is wired; string alone is safe.
             plist.root.SetString("NSUserTrackingUsageDescription",
                 "Usamos esse identificador para medir anúncios e melhorar a experiência.");
             plist.root.SetString("GADUUnityVersion", Application.unityVersion);

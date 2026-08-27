@@ -1,38 +1,37 @@
-# QA checklist — pronto para teste (0.1.36)
+# QA checklist — pronto para teste (0.1.41)
 
-## Device (Galaxy / sideload)
+## Device (Galaxy / Play Internal / sideload release)
 
-- [ ] Home: Jogar tamanho normal; vidas/moedas ok
-- [ ] HUD do jogo: countdown `+1 em MM:SS` no chip de vidas
-- [ ] Níveis 1–3: tutorial básico
+- [ ] Home: Jogar; vidas/moedas; palácio
+- [ ] HUD: countdown `+1 em MM:SS` no chip de vidas
+- [ ] Níveis 1–3: tutorial
 - [ ] Níveis 4–7: hints foguete / bomba / disco / combo
-- [ ] Trocar dois poderes → combo (flash + SFX)
-- [ ] Nível 8+: gelo quebra com match ao lado
-- [ ] Nível 17+: caixas; poderes quebram caixas na linha
-- [ ] Objetivo obstáculos mostra ícone de caixa
+- [ ] Trocar dois poderes → combo
+- [ ] Nível 8+: gelo; 17+: caixas
 - [ ] Sem movimentos → Continuar (moedas/vídeo) / Tentar de novo
-- [ ] Tempo esgotado → tela Result “Tempo esgotado” (não reinicia sozinho); Continuar dá +5 moves e +1:00
-- [ ] Vitória → reveal do palácio; a cada 3 wins “Nova peça”
-- [ ] Config: Sons / Música / Vibração
-- [ ] Sem vidas → regen countdown + vídeo/loja
+- [ ] Tempo esgotado → Result; Continuar +5 moves
+- [ ] Vitória → reveal do palácio
+- [ ] Config: Sons / Música / Vibração (ícones)
+- [ ] Sem vidas → regen + vídeo/loja
+- [ ] Loja: preços da loja (não sandbox) em build **Release**
+- [ ] Restore compras
 - [ ] 10 níveis seguidos sem crash
 
 ## Editor
 
-- [ ] Edit Mode tests verdes (`Lumina Match/Run Edit Mode Tests Now`)
+- [ ] Edit Mode tests verdes
 - [ ] Project abre sem erros de compile
 
-## Builds locais
+## Builds
 
-- APK: `Builds/Android/LuminaMatch-release.apk` / Desktop `LuminaMatch-0.1.36.apk`
-- AAB: `Builds/Android/LuminaMatch-release.aab` / Desktop `LuminaMatch-0.1.36.aab`
-- versionName `0.1.36` · versionCode `44`
-- Home: barra do palácio + “próxima peça”
-- Loja: scroll + sem IAP duplicado
-- Níveis 31–40 curados (6 cores)
+- AAB release: `Builds/Android/LuminaMatch-release.aab` · **0.1.41 / 49**
+- APK release: sideload OK; **não** enviar Debug APK às lojas
+- iOS: `Builds/iOS/` → Archive build **50** em macOS estável
 
-## Fora do escopo deste playtest (ação humana)
+## Store gate
 
-- AdMob unit IDs reais (hoje sample do Google)
-- Google Play merchant + IAP
-- Upload Internal Testing / iOS
+- [ ] Play Internal/Closed OK no device
+- [ ] Play Production promote (após merchant + QA)
+- [ ] TestFlight / ASC Review com build 50
+- [ ] AdMob fills (ou graceful fail sem grant grátis)
+- [ ] IAP sandbox Apple / license testers Play

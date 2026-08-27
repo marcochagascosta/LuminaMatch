@@ -1,57 +1,48 @@
 # Lumina Match
 
-Match-3 mobile game (Unity C#) inspired by the monetization model of top-grossing casual titles like Royal Match.
+Match-3 mobile game (Unity C#) — restore the **Palácio de Luz**. Lives, boosters, continues, Unity IAP and AdMob included.
 
-Restore the **Palácio de Luz** by matching gems across 60 levels. Lives, boosters, continues, IAP sandbox and rewarded ads included.
+**Store target:** `0.1.41` · Android versionCode `49` · iOS build `50` · package `com.marcosaas.luminamatch`
 
 ## Requirements
 
-- Unity **6000.5.x** (Unity 6) or compatible Unity 6 LTS
-- macOS for iOS builds (Xcode)
-- Android SDK via Unity Hub modules
+- Unity **6000.5.x** (Unity 6)
+- macOS **stable** for App Store archives (macOS beta → ITMS-90111)
+- Android SDK via Unity Hub; release signing via env `LUMINA_STOREPASS` / `LUMINA_KEYPASS`
 
 ## Open & play
 
-1. Open `/Users/marcocosta/Games/LuminaMatch` in Unity Hub
-2. Menu **Lumina Match → Setup Project Scenes** (creates `Assets/Scenes/Boot.unity` + bundle IDs)
+1. Open the project in Unity Hub
+2. Menu **Lumina Match → Setup Project Scenes** (Boot scene + ids; keeps version 0.1.41)
 3. Open `Assets/Scenes/Boot` and press **Play**
-4. Home → Jogar → pick a level (or Continuar)
-
-The app also auto-boots via `RuntimeInitializeOnLoadMethod` if the scene is empty.
 
 ## Tests
 
-- Menu **Lumina Match → Run Edit Mode Tests Now**, or Window → General → Test Runner → EditMode → Run All
-- Covered: match detection, gravity, level catalog, session bootstrap
+Menu **Lumina Match → Run Edit Mode Tests Now**
 
-## Monetization (sandbox)
+## Monetization
 
-`SandboxIapService` / `SandboxAdsService` grant rewards locally for testing.
-
-Product IDs (wire to Unity IAP / store consoles before release):
-
-| Product | Suggested price |
-|---------|-----------------|
-| CoinsSmall (500) | R$ 6,90 |
-| CoinsMedium (1500) | R$ 14,90 |
-| CoinsLarge (5000) | R$ 39,90 |
-| LivesRefill | R$ 6,90 |
-| BoosterPack | R$ 14,90 |
-| RemoveAds | R$ 49,90 |
+- **Editor:** sandbox IAP/Ads (instant local grants)
+- **Player / Release:** `UnityIapService` + `AdMobAdsService` — no free grants if the store/ad fails
+- **Never upload** the Debug APK to stores (`DEVELOPMENT_BUILD` enables local IAP fallback)
+- SKUs: `docs/STORE_IAP_SKUS.md` · Ads: `docs/STORE_ADS_SETUP.md` · Billing: `docs/BILLING_CHECKLIST.md`
 
 ## Builds
 
-- **Android APK:** Lumina Match → Build Android APK (Debug) → `Builds/Android/LuminaMatch-debug.apk`
-- **iOS:** Lumina Match → Build iOS Xcode Project → `Builds/iOS/` then archive in Xcode with your Apple team
+| Target | Menu | Output |
+|--------|------|--------|
+| Android AAB release | Build Android AAB (Release) | `Builds/Android/LuminaMatch-release.aab` |
+| Android APK release | Build Android APK (Release) | `Builds/Android/LuminaMatch-release.apk` |
+| iOS | Build iOS Xcode Project | `Builds/iOS/` → Archive in Xcode |
 
-Bundle ID: `com.marcosaas.luminamatch`
+## Store publication
+
+- Status: `docs/STORE_STATUS.md`
+- Checklist: `docs/STORE_CHECKLIST.md`
+- Listing copy: `docs/STORE_LISTING.md`
+- Play promote: `python3 tools/play_promote_production.py --dry-run`
+- iOS runbook: `docs/IOS_SUBMIT_RUNBOOK.md`
 
 ## Security
 
 Never commit keystores, `.p12`, AuthKey `.p8`, or Play service accounts. See `.gitignore`.
-
-## Docs
-
-- `docs/GDD.md` — game design short
-- `docs/STORE_CHECKLIST.md` — App Store / Play submission
-- `docs/QA_CHECKLIST.md` — manual QA gate before release
