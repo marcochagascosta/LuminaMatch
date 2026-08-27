@@ -37,9 +37,9 @@ namespace LuminaMatch.Editor
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.marcosaas.luminamatch");
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, "com.marcosaas.luminamatch");
             // Keep in sync with BuildScripts / ProjectSettings (store production).
-            PlayerSettings.bundleVersion = "0.1.41";
+            PlayerSettings.bundleVersion = "0.1.42";
             PlayerSettings.Android.bundleVersionCode = 49;
-            PlayerSettings.iOS.buildNumber = "50";
+            PlayerSettings.iOS.buildNumber = "51";
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
 
             AssetDatabase.SaveAssets();

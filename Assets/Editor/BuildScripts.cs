@@ -99,7 +99,7 @@ namespace LuminaMatch.Editor
             // Keep minSdk aligned with ProjectSettings (API 26+) for Play production.
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
-            PlayerSettings.bundleVersion = "0.1.41";
+            PlayerSettings.bundleVersion = "0.1.42";
             PlayerSettings.Android.bundleVersionCode = 49;
 
             try
@@ -202,8 +202,8 @@ namespace LuminaMatch.Editor
             ApplyAppIconIfPresent();
             PlayerSettings.iOS.sdkVersion = sdk;
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, "com.marcosaas.luminamatch");
-            PlayerSettings.bundleVersion = "0.1.41";
-            PlayerSettings.iOS.buildNumber = "50";
+            PlayerSettings.bundleVersion = "0.1.42";
+            PlayerSettings.iOS.buildNumber = "51";
             PlayerSettings.iOS.appleEnableAutomaticSigning = true;
             PlayerSettings.iOS.appleDeveloperTeamID = "6LQQD54JHB";
             // Encryption compliance: standard HTTPS only (ITSAppUsesNonExemptEncryption=false via plist post-process).

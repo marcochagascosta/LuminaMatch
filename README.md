@@ -37,11 +37,13 @@ Menu **Lumina Match → Run Edit Mode Tests Now**
 
 ## Store publication
 
+- **Lançar / faturar agora:** `docs/LAUNCH_NOW.md`
 - Status: `docs/STORE_STATUS.md`
 - Checklist: `docs/STORE_CHECKLIST.md`
-- Listing copy: `docs/STORE_LISTING.md`
+- Listing: `docs/STORE_LISTING.md`
 - Play promote: `python3 tools/play_promote_production.py --dry-run`
 - iOS runbook: `docs/IOS_SUBMIT_RUNBOOK.md`
+- CI: `.github/workflows/promote-play-production.yml` · `ios-testflight.yml`
 
 ## Security
 

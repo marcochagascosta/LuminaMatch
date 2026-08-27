@@ -1,0 +1,56 @@
+# Promove a release já publicada em alpha/internal → Google Play Production.
+# Não precisa de Mac. Requer secret GOOGLE_APPLICATION_CREDENTIALS_JSON
+# (service account com androidpublisher no projeto lumina-match-play47).
+#
+# Trigger: Actions → "Promote Play Production" → Run workflow
+
+name: Promote Play Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_track:
+        description: Track de origem
+        required: true
+        default: alpha
+        type: choice
+        options:
+          - alpha
+          - internal
+      user_fraction:
+        description: Fração do staged rollout (1.0 = 100%)
+        required: true
+        default: "1.0"
+      confirm:
+        description: Digite PROMOTE para confirmar
+        required: true
+        default: ""
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'PROMOTE'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Google Auth
+        run: pip install --quiet google-auth
+
+      - name: Promote to production
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GOOGLE_APPLICATION_CREDENTIALS_JSON:-}" ]; then
+            echo "Missing secret GOOGLE_APPLICATION_CREDENTIALS_JSON"
+            exit 1
+          fi
+          python3 tools/play_promote_production.py \
+            --source-track "${{ github.event.inputs.source_track }}" \
+            --user-fraction "${{ github.event.inputs.user_fraction }}" \
+            --yes

@@ -1,0 +1,174 @@
+# Build iOS em runner macOS estável (não beta) + upload App Store Connect / TestFlight.
+# Contorna o Macbook no macOS 27 beta (ITMS-90111).
+#
+# Secrets necessários:
+#   UNITY_LICENSE (ou UNITY_EMAIL + UNITY_PASSWORD)
+#   ASC_ISSUER_ID, ASC_KEY_ID, ASC_PRIVATE_KEY_P8
+# Opcionais (se automatic signing falhar):
+#   APPLE_CERTIFICATE_P12_BASE64, APPLE_CERTIFICATE_PASSWORD,
+#   APPLE_PROVISIONING_PROFILE_BASE64
+#
+# Trigger: Actions → "iOS TestFlight (macOS CI)" → Run workflow
+
+name: iOS TestFlight (macOS CI)
+
+on:
+  workflow_dispatch:
+
+env:
+  UNITY_VERSION: 6000.5.0f1
+  BUNDLE_ID: com.marcosaas.luminamatch
+  TEAM_ID: 6LQQD54JHB
+  ASC_APP_ID: "6791448071"
+
+jobs:
+  build-ios:
+    name: Unity iOS + Upload
+    runs-on: macos-14
+    timeout-minutes: 240
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-iOS-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/packages-lock.json', 'ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: |
+            Library-iOS-${{ env.UNITY_VERSION }}-
+            Library-iOS-
+
+      - name: Build Unity iOS Xcode project
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: iOS
+          unityVersion: ${{ env.UNITY_VERSION }}
+          buildMethod: LuminaMatch.Editor.BatchEntrypoint.BuildIos
+          allowDirtyBuild: true
+
+      - name: Locate Xcode project
+        id: xcode
+        run: |
+          set -euo pipefail
+          # game-ci default output is build/iOS or Builds/iOS depending on build method
+          for d in build/iOS Builds/iOS build Builds; do
+            if [ -d "$d" ]; then
+              proj=$(find "$d" -name "*.xcodeproj" -print -quit || true)
+              if [ -n "${proj:-}" ]; then
+                echo "project=$proj" >> "$GITHUB_OUTPUT"
+                echo "dir=$(dirname "$proj")" >> "$GITHUB_OUTPUT"
+                echo "Found $proj"
+                exit 0
+              fi
+            fi
+          done
+          echo "Xcode project not found"; find . -name "*.xcodeproj" | head
+          exit 1
+
+      - name: Import Apple signing (optional manual certs)
+        env:
+          APPLE_CERTIFICATE_P12_BASE64: ${{ secrets.APPLE_CERTIFICATE_P12_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_PROVISIONING_PROFILE_BASE64: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          set -euo pipefail
+          if [ -z "${APPLE_CERTIFICATE_P12_BASE64:-}" ]; then
+            echo "No manual cert secret — using Xcode Automatic signing with Team ${{ env.TEAM_ID }}"
+            exit 0
+          fi
+          CERT_PATH=$RUNNER_TEMP/cert.p12
+          echo "$APPLE_CERTIFICATE_P12_BASE64" | base64 --decode > "$CERT_PATH"
+          KEYCHAIN=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 24)
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$CERT_PATH" -P "${APPLE_CERTIFICATE_PASSWORD:-}" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security list-keychain -d user -s "$KEYCHAIN"
+          if [ -n "${APPLE_PROVISIONING_PROFILE_BASE64:-}" ]; then
+            mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+            echo "$APPLE_PROVISIONING_PROFILE_BASE64" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/lumina.mobileprovision
+          fi
+
+      - name: Archive + IPA
+        working-directory: ${{ steps.xcode.outputs.dir }}
+        run: |
+          set -euo pipefail
+          SCHEME=$(xcodebuild -list -json | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['project']['schemes'][0])")
+          echo "Scheme=$SCHEME"
+          xcodebuild \
+            -project "$(basename "${{ steps.xcode.outputs.project }}")" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/LuminaMatch.xcarchive" \
+            DEVELOPMENT_TEAM="${{ env.TEAM_ID }}" \
+            CODE_SIGN_STYLE=Automatic \
+            archive | xcpretty || true
+          # xcpretty may not exist; re-run without if archive missing
+          if [ ! -d "$RUNNER_TEMP/LuminaMatch.xcarchive" ]; then
+            xcodebuild \
+              -project "$(basename "${{ steps.xcode.outputs.project }}")" \
+              -scheme "$SCHEME" \
+              -configuration Release \
+              -destination 'generic/platform=iOS' \
+              -archivePath "$RUNNER_TEMP/LuminaMatch.xcarchive" \
+              DEVELOPMENT_TEAM="${{ env.TEAM_ID }}" \
+              CODE_SIGN_STYLE=Automatic \
+              archive
+          fi
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>export</string>
+            <key>teamID</key><string>${{ env.TEAM_ID }}</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>uploadSymbols</key><true/>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/LuminaMatch.xcarchive" \
+            -exportPath "$RUNNER_TEMP/ipa" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist"
+          ls -la "$RUNNER_TEMP/ipa"
+
+      - name: Upload IPA to App Store Connect
+        env:
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_PRIVATE_KEY_P8: ${{ secrets.ASC_PRIVATE_KEY_P8 }}
+        run: |
+          set -euo pipefail
+          IPA=$(find "$RUNNER_TEMP/ipa" -name "*.ipa" | head -1)
+          test -n "$IPA"
+          mkdir -p "$RUNNER_TEMP/private_keys"
+          # altool expects AuthKey_<KEYID>.p8 in private_keys or ~/.appstoreconnect/private_keys
+          KEYFILE="$RUNNER_TEMP/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          printf '%s\n' "$ASC_PRIVATE_KEY_P8" | sed 's/\\n/\n/g' > "$KEYFILE"
+          export API_PRIVATE_KEYS_DIR="$RUNNER_TEMP/private_keys"
+          xcrun altool --upload-app \
+            --type ios \
+            --file "$IPA" \
+            --apiKey "$ASC_KEY_ID" \
+            --apiIssuer "$ASC_ISSUER_ID" \
+            --verbose
+
+      - name: Upload IPA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: LuminaMatch-ios-ipa
+          path: ${{ runner.temp }}/ipa/*.ipa
+          if-no-files-found: ignore
+          retention-days: 7
