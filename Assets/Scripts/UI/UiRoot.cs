@@ -83,12 +83,14 @@ namespace LuminaMatch.UI
                 var scaler = canvasGo.GetComponent<CanvasScaler>();
                 scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
                 scaler.referenceResolution = new Vector2(1080, 1920);
-                scaler.matchWidthOrHeight = 0.5f;
+                // Phones: balanced. Tablets/iPad: prefer height so ±900 chrome still fits.
+                scaler.matchWidthOrHeight = IsTabletLikeDisplay() ? 0.85f : 0.5f;
 
                 var rootGo = new GameObject("Root", typeof(RectTransform));
                 rootGo.transform.SetParent(canvasGo.transform, false);
                 _root = rootGo.GetComponent<RectTransform>();
                 Stretch(_root);
+                ApplyTabletScreenFit();
 
                 _boardPresenter = gameObject.GetComponent<BoardPresenter>();
                 if (_boardPresenter == null)
@@ -1861,12 +1863,56 @@ namespace LuminaMatch.UI
             t.alignment = TextAnchor.MiddleCenter;
         }
 
+        /// <summary>
+        /// iPad / tablets are wider than the 1080×1920 phone layout, so chrome at ±900
+        /// gets clipped. Shrink the whole UI a bit and nudge it slightly downward.
+        /// </summary>
+        void ApplyTabletScreenFit()
+        {
+            if (_root == null || !IsTabletLikeDisplay())
+                return;
+
+            // ~10% smaller so Home / Gameplay / Shop fit inside 4:3 without cutting Map / headers.
+            const float tabletScale = 0.90f;
+            _root.localScale = new Vector3(tabletScale, tabletScale, 1f);
+
+            // "Abaixar" a composição: um pouco mais de margem no topo do que na base.
+            const float sidePad = 20f;
+            const float topPad = 40f;
+            const float bottomPad = 16f;
+            _root.offsetMin = new Vector2(sidePad, bottomPad);
+            _root.offsetMax = new Vector2(-sidePad, -topPad);
+
+            Debug.Log($"[LuminaMatch] Tablet/iPad UI fit: scale={tabletScale}, pads=({sidePad},{topPad},{bottomPad})");
+        }
+
+        static bool IsTabletLikeDisplay()
+        {
+#if UNITY_IOS
+            string model = SystemInfo.deviceModel ?? "";
+            if (model.IndexOf("iPad", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+#endif
+            float w = Mathf.Max(1f, Screen.width);
+            float h = Mathf.Max(1f, Screen.height);
+            float shortSide = Mathf.Min(w, h);
+            float longSide = Mathf.Max(w, h);
+            float aspect = shortSide / longSide; // portrait: width/height
+            // Phones ~0.45–0.5; iPads ~0.70–0.75.
+            if (aspect >= 0.62f)
+                return true;
+
+            float dpi = Screen.dpi > 20f ? Screen.dpi : 160f;
+            float diagInches = Mathf.Sqrt(w * w + h * h) / dpi;
+            return diagInches >= 7.0f;
+        }
+
         /// <summary>Canvas size in scaler units (matches CanvasScaler Scale With Screen Size).</summary>
         void GetGameplayCanvasSize(out float canvasW, out float canvasH)
         {
             const float refW = 1080f;
             const float refH = 1920f;
-            const float match = 0.5f;
+            float match = IsTabletLikeDisplay() ? 0.85f : 0.5f;
             float sw = Mathf.Max(1f, Screen.width);
             float sh = Mathf.Max(1f, Screen.height);
             float logW = Mathf.Log(sw / refW);
@@ -1877,7 +1923,7 @@ namespace LuminaMatch.UI
 
             if (_root != null && _root.rect.width > 100f && _root.rect.height > 100f)
             {
-                // Prefer live rect when available (safe area / overlay quirks).
+                // Live rect in layout space (localScale is visual-only; do not divide).
                 canvasW = _root.rect.width;
                 canvasH = _root.rect.height;
             }
