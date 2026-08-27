@@ -62,26 +62,43 @@ Para o MVP atual (progresso local, sem login):
 ## 7. Teste interno (Testar e lançar → Teste interno)
 
 1. **Criar nova versão**
-2. Upload: `/Users/marcocosta/Desktop/LuminaMatch-0.1.2.aab` (ou `Builds/Android/LuminaMatch-release.aab`)
-3. Nome da versão: `0.1.2 (3)`
-4. Notas: `Competitive store build — board art, tutorial, powers, offers, Unity IAP/Ads hooks.`
+2. Upload AAB release assinado (`Builds/Android/LuminaMatch-release.aab`) — versão atual alvo: **0.1.41 / versionCode 49**
+3. Nome da versão: `0.1.41 (49)`
+4. Notas: `Match-3, boosters, IAP/AdMob, Billing Library 8.3.0.`
 5. **Revisar versão** → **Iniciar implantação para testadores internos**
 6. Aba **Testadores** → adicione seu e-mail Google
 7. Copie o link **opt-in** e instale no Android
 
+### Promover para Production (API)
+
+Com ADC / service account (`androidpublisher`):
+
+```bash
+python3 tools/play_promote_production.py --dry-run
+python3 tools/play_promote_production.py --yes
+```
+
+Copia a release da faixa `alpha` (ou `--source-track internal`) para `production`.
+
 ## 8. Assinatura do app (Integridade do app)
 
-O AAB já está assinado com:
-- Keystore: `~/.lumina-match-secrets/lumina-upload.keystore`
-- Alias: `lumina_upload`
+O AAB de release usa:
+- Keystore: `~/.lumina-match-secrets/lumina-upload.keystore` (ou `LUMINA_KEYSTORE`)
+- Alias: `lumina_upload` (ou `LUMINA_KEYALIAS`)
+- Senhas **somente** via env: `LUMINA_STOREPASS` / `LUMINA_KEYPASS` (não ficam no git)
 
 Na primeira upload, o Play registra a **chave de upload**. Guarde o keystore — perder = não atualiza o app.
 
-## Checklist rápido antes do Internal
+Se a senha já vazou em commit antigo, **troque a senha do keystore** no Mac e atualize os secrets locais.
+
+## Checklist rápido antes do Internal / Production
 
 - [ ] Package `com.marcosaas.luminamatch` confere
 - [ ] Política de privacidade URL salva
 - [ ] Classificação de conteúdo concluída
 - [ ] Segurança dos dados concluída
-- [ ] AAB uploaded
-- [ ] Testador adicionado
+- [ ] Feature graphic + ícone 1024 (`docs/store/`)
+- [ ] AAB uploaded (ou promote da alpha)
+- [ ] Testador / rollout OK
+- [ ] Merchant account (para IAP real)
+
